@@ -1,27 +1,27 @@
 # RL model and buffer
-from DRL_MARL_homework.MBAM.policy.MBAM import MBAM
-from DRL_MARL_homework.MBAM.policy.MBAM_OM_MH import MBAM_OM_MH
-from DRL_MARL_homework.MBAM.policy.MBAM_MH import MBAM_MH
-from DRL_MARL_homework.MBAM.baselines.PPO import PPO, PPO_Buffer
-from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
-from DRL_MARL_homework.MBAM.baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
+from policy.MBAM import MBAM
+from policy.MBAM_OM_MH import MBAM_OM_MH
+from policy.MBAM_MH import MBAM_MH
+from baselines.PPO import PPO, PPO_Buffer
+from baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
+from baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
 
 # env
-from DRL_MARL_homework.MBAM.env_wapper.simple_tag.simple_tag import Simple_Tag
+from env_wapper.simple_tag.simple_tag import Simple_Tag
 # env_model
 
 # conf
-from DRL_MARL_homework.MBAM.config.simple_tag_conf import player1_conf, player2_conf
-from DRL_MARL_homework.MBAM.utils.rl_utils_MH import collect_trajectory_MH, collect_trajectory_MH_reversed
+from config.simple_tag_conf import player1_conf, player2_conf
+from utils.rl_utils_MH import collect_trajectory_MH, collect_trajectory_MH_reversed
 # logger
-from DRL_MARL_homework.MBAM.utils.Logger import Logger
-from DRL_MARL_homework.MBAM.utils.get_process_memory import get_processes_memory_gb
+from utils.Logger import Logger
+from utils.get_process_memory import get_processes_memory_gb
 import random
 import torch
 import numpy as np
 import multiprocessing as mp
 import os
-from DRL_MARL_homework.MBAM.utils.get_exp_data_path import get_exp_data_path
+from utils.get_exp_data_path import get_exp_data_path
 
 def simple_tag_trainer(args, logger):
     mp.set_start_method("spawn")
@@ -202,63 +202,8 @@ def individual_worker_reversed(args, logger, **kwargs):
     logger.log("train end!")
 
 
-def continue_train_worker(args, logger, mbam, **kwargs):
-    '''set seed'''
-    random.seed(logger.seed)
-    torch.manual_seed(logger.seed)
-    np.random.seed(logger.seed)
-    '''env'''
-    env = Simple_RPS(eps_max_step=args.eps_max_step)
-    env_model = None
-    '''prepare agents'''
-    '''get shooter model file list'''
-    player1_path = get_exp_data_path() + "/Simple_RPS/new_Player1"
-    player1_model_file_list = []
-    for root, dirs, files in os.walk(player1_path):
-        for f in files:
-            player1_model_file_list.append(os.path.join(root, f))
-
-    ppo = PPO(args, player1_conf, name="player1", logger=logger, actor_rnn=args.actor_rnn, device=args.device)
-    agents = [ppo, mbam]
-    buffers = [PPO_Buffer(args=args, conf=agent.conf, name=agent.name, actor_rnn=args.actor_rnn, device=args.device) for agent in agents]
-
-    logger.log_param(args, [agent.conf for agent in agents])
-    global_step = 0
-
-    player1_count = 0
-    for epoch in range(1, args.max_epoch + 1):
-        if player1_count == 0:
-            player1_file = player1_model_file_list[np.random.randint(0, len(player1_model_file_list), 1).item()]
-            ppo = PPO.load_model(player1_file, args, logger, args.device)
-            agents = [ppo, mbam]
-            player1_count += 1
-        elif player1_count == 9:
-            player1_count = 0
-        else:
-            player1_count += 1
-
-        logger.log("epoch:{} start!".format(epoch))
-        memory, scores, global_step = collect_trajectory(agents, env, args, global_step, is_prophetic=True)
-        for i in range(1, 2):
-            logger.log_performance(tag=agents[i].name, iteration=epoch, Score=scores[i])
-            if args.alter_train:
-                if int((epoch - 1) / args.alter_interval) % 2 == i:
-                    buffers[i].store_multi_memory(memory[i], last_val=0)
-                    agents[i].learn(data=buffers[i].get_batch(), iteration=epoch, no_log=False)
-                else:
-                    buffers[i].clear_memory()
-            else:
-                buffers[i].store_multi_memory(memory[i], last_val=0)
-                agents[i].learn(data=buffers[i].get_batch(), iteration=epoch, no_log=False)
-        if epoch % args.save_per_epoch == 0:
-            for i in range(1, 2):
-                agents[i].save_model(epoch)
-        # logger.log("memory:{}".format(get_current_memory_gb()))
-    logger.log("train end!")
-
-
 if __name__ == "__main__":
-    from DRL_MARL_homework.MBAM.main import main
+    from main import main
     import argparse
     parser = argparse.ArgumentParser(description="")
 

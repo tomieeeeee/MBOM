@@ -3,19 +3,20 @@ import random
 import time
 import os
 import sys
+###################
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
 sys.path.append("/home/xiaopeng/CodeWorkspace/RL")
 # logger
-from DRL_MARL_homework.MBAM.utils.Logger import Logger
+from utils.Logger import Logger
 # trainer tester
-from DRL_MARL_homework.MBAM.exp.simple_tag.trainer import simple_tag_trainer
-from DRL_MARL_homework.MBAM.exp.simple_tag.tester import simple_tag_tester
-#from DRL_MARL_homework.MBAM.exp.coin_game.trainer import coin_game_trainer
-#from DRL_MARL_homework.MBAM.exp.coin_game.tester import coin_game_tester
+from exp.simple_tag.trainer import simple_tag_trainer
+from exp.simple_tag.tester import simple_tag_tester
+#from exp.coin_game.trainer import coin_game_trainer
+#from exp.coin_game.tester import coin_game_tester
 # dir
-from DRL_MARL_homework.MBAM.utils.get_exp_data_path import get_exp_data_path
+from utils.get_exp_data_path import get_exp_data_path
 # env_model
-from DRL_MARL_homework.MBAM.env_model.simple_tag.model_simple_tag import ENV_Simple_Tag
+from env_model.simple_tag.model_simple_tag import ENV_Simple_Tag
 import os
 import psutil
 

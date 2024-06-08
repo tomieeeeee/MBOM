@@ -1,9 +1,9 @@
 import sys
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
-from DRL_MARL_homework.MBAM.baselines.PPO import PPO, PPO_Buffer
-from DRL_MARL_homework.MBAM.policy.Opponent_Model import Opponent_Model, OM_Buffer
-from DRL_MARL_homework.MBAM.utils.datatype_transform import dcn
-from DRL_MARL_homework.MBAM.utils.rl_utils import discount_cumsum
+from baselines.PPO import PPO, PPO_Buffer
+from policy.Opponent_Model import Opponent_Model, OM_Buffer
+from utils.datatype_transform import dcn
+from utils.rl_utils import discount_cumsum
 import torch
 import torch.nn as nn
 from torch.distributions.categorical import Categorical
@@ -683,10 +683,10 @@ if __name__ == "__main__":
     import argparse
     import numpy as np
     import os
-    from DRL_MARL_homework.MBAM.utils.get_exp_data_path import get_exp_data_path
-    from DRL_MARL_homework.MBAM.utils.rl_utils import collect_trajectory
-    from DRL_MARL_homework.MBAM.env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env as football_env
-    from DRL_MARL_homework.MBAM.utils.Logger import Logger
+    from utils.get_exp_data_path import get_exp_data_path
+    from utils.rl_utils import collect_trajectory
+    from env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env as football_env
+    from utils.Logger import Logger
     parser = argparse.ArgumentParser(description="test")
     parser.add_argument("--exp_name", type=str, default="football_ppo_vs_mbam", help="football_ppo_vs_mbam\n " +
                                                                                      "predator_ppo_vs_mbam\n")

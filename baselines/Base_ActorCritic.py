@@ -1,7 +1,7 @@
 import sys
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
-from DRL_MARL_homework.MBAM.base.MLP import MLP
-from DRL_MARL_homework.MBAM.base.Actor_RNN import Actor_RNN
+from base.MLP import MLP
+from base.Actor_RNN import Actor_RNN
 from torch.optim import Adam
 class Base_ActorCritic(object):
     def __init__(self, a_n_state, v_n_state, n_action, a_hidden_layers, v_hidden_layers, actor_rnn, args, conf, name, logger):

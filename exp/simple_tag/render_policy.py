@@ -1,12 +1,12 @@
 import sys
-sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
-from DRL_MARL_homework.MBAM.policy.MBAM import MBAM
-from DRL_MARL_homework.MBAM.policy.MBAM_OM_MH import MBAM_OM_MH
-from DRL_MARL_homework.MBAM.policy.MBAM_MH import MBAM_MH
-from DRL_MARL_homework.MBAM.baselines.PPO import PPO, PPO_Buffer
-from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
-from DRL_MARL_homework.MBAM.baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
-from DRL_MARL_homework.MBAM.env_wapper.simple_tag.simple_tag import Simple_Tag
+sys.path.append("D:\document\MBAM_origin")
+from policy.MBAM import MBAM
+from policy.MBAM_OM_MH import MBAM_OM_MH
+from policy.MBAM_MH import MBAM_MH
+from baselines.PPO import PPO, PPO_Buffer
+from baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
+from baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
+from env_wapper.simple_tag.simple_tag import Simple_Tag
 import argparse
 import time
 if __name__ == '__main__':
@@ -27,9 +27,9 @@ if __name__ == '__main__':
 
     MOD = "ppo vs mbam" # or "mbam vs ppo"
     if MOD == "ppo vs mbam":
-        file_dir = "/media/lenovo/144ED9814ED95C54/experiment_data/Simple_Tag/train/trueprob_simple_tag_ppo_vs_mbam_10oppo/0_1284741196/worker/0_2/model/"
-        player1_file = file_dir + "PPO_MH_player1_rank2_iter40000.ckp"
-        player2_file = file_dir + "MBAM_player2_iter40000.ckp"
+        file_dir = "D:/document/MBAM/data/Simple_Tag/"
+        player1_file = file_dir + "PPO_MH_player1_rank0_iter30000.ckp"
+        player2_file = file_dir + "MBAM_player2_player2_iter2700.ckp"
         player1_type = "ppo_mh" # "mbam_mh_om_mh"
         player2_type = "mbam_om_mh"
 

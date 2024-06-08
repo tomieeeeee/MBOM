@@ -382,10 +382,10 @@ def collect_trajectory_for_rnn_mixer(agents, env, args, global_step, is_propheti
 
 if __name__ == "__main__":
 
-    from DRL_MARL_homework.MBAM.policy.MBAM import MBAM
-    from DRL_MARL_homework.MBAM.baselines.PPO import PPO, PPO_Buffer
-    from DRL_MARL_homework.MBAM.env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env
-    from DRL_MARL_homework.MBAM.utils.Logger import Logger
+    from policy.MBAM import MBAM
+    from baselines.PPO import PPO, PPO_Buffer
+    from env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env
+    from utils.Logger import Logger
     import time
     import argparse
     import numpy as np

@@ -5,7 +5,7 @@ import atexit
 import numpy as np
 import re
 from torch.utils.tensorboard import SummaryWriter
-from DRL_MARL_homework.MBAM.utils.plot_util import symmetric_ema
+from utils.plot_util import symmetric_ema
 import matplotlib.pyplot as plt
 
 class Logger():

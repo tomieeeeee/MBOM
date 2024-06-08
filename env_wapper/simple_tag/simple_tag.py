@@ -1,5 +1,5 @@
-from DRL_MARL_homework.MBAM.env_wapper.mpe.make_env import make_env
-from DRL_MARL_homework.MBAM.utils.simple_tag_action_mapping import dis_idx_to_dis_onehot, idx_to_dis_idx
+from env_wapper.mpe.make_env import make_env
+from utils.simple_tag_action_mapping import dis_idx_to_dis_onehot, idx_to_dis_idx
 import numpy as np
 # 1 v 3  and  agent speed is 1.3
 
@@ -58,10 +58,10 @@ class Simple_Tag(object):
         self.env.render()
 
 if __name__ == "__main__":
-    from DRL_MARL_homework.MBAM.policy.MBAM import MBAM
-    from DRL_MARL_homework.MBAM.baselines.PPO import PPO
-    from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH
-    from DRL_MARL_homework.MBAM.config.simple_tag_conf import player1_conf, player2_conf
+    from policy.MBAM import MBAM
+    from baselines.PPO import PPO
+    from baselines.PPO_MH import PPO_MH
+    from config.simple_tag_conf import player1_conf, player2_conf
     import argparse
     import time
     parser = argparse.ArgumentParser(description="")

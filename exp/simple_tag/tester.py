@@ -1,19 +1,19 @@
 # RL model and buffer
-from DRL_MARL_homework.MBAM.policy.MBAM_OM_MH import MBAM_OM_MH
-from DRL_MARL_homework.MBAM.baselines.PPO_OM_MH import PPO_OM_MH_Buffer
-from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
-from DRL_MARL_homework.MBAM.policy.MBAM_MH import MBAM_MH
-from DRL_MARL_homework.MBAM.baselines.PPO import PPO, PPO_Buffer
+from policy.MBAM_OM_MH import MBAM_OM_MH
+from baselines.PPO_OM_MH import PPO_OM_MH_Buffer
+from baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
+from policy.MBAM_MH import MBAM_MH
+from baselines.PPO import PPO, PPO_Buffer
 # env
-from DRL_MARL_homework.MBAM.env_wapper.simple_tag.simple_tag import Simple_Tag
+from env_wapper.simple_tag.simple_tag import Simple_Tag
 # env_model
-from DRL_MARL_homework.MBAM.env_model.simple_tag.model_simple_tag import load_env_model as simple_tag_env_model
+from env_model.simple_tag.model_simple_tag import load_env_model as simple_tag_env_model
 # conf
-from DRL_MARL_homework.MBAM.config.simple_tag_conf import player1_conf, player2_conf
-from DRL_MARL_homework.MBAM.utils.Logger import Logger
-from DRL_MARL_homework.MBAM.utils.rl_utils_MH import collect_trajectory_MH
-from DRL_MARL_homework.MBAM.utils.get_process_memory import get_current_memory_gb
-from DRL_MARL_homework.MBAM.utils.get_exp_data_path import get_exp_data_path
+from config.simple_tag_conf import player1_conf, player2_conf
+from utils.Logger import Logger
+from utils.rl_utils_MH import collect_trajectory_MH
+from utils.get_process_memory import get_current_memory_gb
+from utils.get_exp_data_path import get_exp_data_path
 import os
 import random
 import torch
@@ -36,7 +36,7 @@ def simple_tag_tester(args, logger, **kwargs):
     if args.player2_is_ppo:
         player2_ckp = get_exp_data_path() + "/Simple_Tag/Player2/ppo/PPO_player2_iter20000.ckp"
     else:
-        player2_ckp = get_exp_data_path() + "/Simple_Tag/Player2/mbam_1/MBAM_player2_iter20000.ckp"
+        player2_ckp = get_exp_data_path() + "/Simple_Tag/MBAM_player2_iter7500_run.ckp"
 
     res_l = []
     process_count = 0

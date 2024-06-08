@@ -1,7 +1,7 @@
 #gfootball academy_run_to_score_with_keeper 1v1
 '''
     import gfootball
-    from DRL_MARL_homework.MBAM.env_model.football_1_vs_1_penalty_kick import Env_Model
+    from env_model.football_1_vs_1_penalty_kick import Env_Model
     env = Env_Model(env=gfootball.env.create_environment(env_name="tests.1_vs_1_penalty_kick",
                                                          # "academy_run_to_score_with_keeper",
                                                          representation="simple115",

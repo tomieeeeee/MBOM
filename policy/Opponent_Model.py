@@ -1,6 +1,6 @@
 from copy import deepcopy
-from DRL_MARL_homework.MBAM.base.MLP import MLP
-from DRL_MARL_homework.MBAM.utils.torch_tool import soft_update
+from base.MLP import MLP
+from utils.torch_tool import soft_update
 from collections import OrderedDict
 import numpy as np
 import types

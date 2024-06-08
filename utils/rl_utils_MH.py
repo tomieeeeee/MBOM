@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from memory_profiler import profile
-from DRL_MARL_homework.MBAM.utils.simple_tag_action_mapping import dis_idx_to_idx, idx_to_onehot
+from utils.simple_tag_action_mapping import dis_idx_to_idx, idx_to_onehot
 def discount_cumsum(x, discount):
     import scipy.signal
     """
@@ -575,16 +575,16 @@ def collect_trajectory_for_rnn_mixer(agents, env, args, global_step, is_propheti
     return memories, scores, global_step
 
 if __name__ == "__main__":
-    from DRL_MARL_homework.MBAM.baselines.PPO import PPO, PPO_Buffer
-    from DRL_MARL_homework.MBAM.policy.MBAM_MH import MBAM_MH
-    from DRL_MARL_homework.MBAM.policy.MBAM_OM_MH import MBAM_OM_MH
-    from DRL_MARL_homework.MBAM.baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
-    from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
-    from DRL_MARL_homework.MBAM.env_wapper.simple_tag.simple_tag import Simple_Tag
-    from DRL_MARL_homework.MBAM.utils.Logger import Logger
-    from DRL_MARL_homework.MBAM.config.simple_tag_conf import player1_conf, player2_conf
-    from DRL_MARL_homework.MBAM.env_wapper.simple_tag.simple_tag import Simple_Tag
-    from DRL_MARL_homework.MBAM.env_model.simple_tag.model_simple_tag import ENV_Simple_Tag
+    from baselines.PPO import PPO, PPO_Buffer
+    from policy.MBAM_MH import MBAM_MH
+    from policy.MBAM_OM_MH import MBAM_OM_MH
+    from baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
+    from baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
+    from env_wapper.simple_tag.simple_tag import Simple_Tag
+    from utils.Logger import Logger
+    from config.simple_tag_conf import player1_conf, player2_conf
+    from env_wapper.simple_tag.simple_tag import Simple_Tag
+    from env_model.simple_tag.model_simple_tag import ENV_Simple_Tag
     import time
     import argparse
     import numpy as np

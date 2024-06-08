@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
-from DRL_MARL_homework.MBAM.utils.plot_util import symmetric_ema
+from utils.plot_util import symmetric_ema
 import matplotlib.pyplot as plt
 import math
 

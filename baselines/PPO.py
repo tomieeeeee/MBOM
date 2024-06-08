@@ -1,8 +1,8 @@
 import sys
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
-from DRL_MARL_homework.MBAM.baselines.Base_ActorCritic import Base_ActorCritic
-from DRL_MARL_homework.MBAM.utils.datatype_transform import dcn
-from DRL_MARL_homework.MBAM.utils.rl_utils import discount_cumsum
+from baselines.Base_ActorCritic import Base_ActorCritic
+from utils.datatype_transform import dcn
+from utils.rl_utils import discount_cumsum
 import numpy as np
 import torch
 from torch.distributions.categorical import Categorical
@@ -438,7 +438,7 @@ class PPO_Buffer(object):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="test")
-    from DRL_MARL_homework.MBAM.env_wapper.simple_predator import simple_predator
+    from env_wapper.simple_predator import simple_predator
     args = parser.parse_args()
     conf = {
         "conf_id": "shooter_conf",

@@ -1,5 +1,5 @@
 import numpy as np
-import DRL_MARL_homework.MBAM.env_wapper.mpe.make_env as make_env
+import env_wapper.mpe.make_env as make_env
 
 
 if __name__ == "__main__":

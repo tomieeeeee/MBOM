@@ -3,14 +3,14 @@ sys.path.append('/home/lenovo/文档/CodeWorkspace/RL')
 import torch
 import torch.nn as nn
 import numpy as np
-from DRL_MARL_homework.MBAM.env_wapper.simple_tag.simple_tag import Simple_Tag
-from DRL_MARL_homework.MBAM.utils.datatype_transform import dcn
-from DRL_MARL_homework.MBAM.utils.get_exp_data_path import get_exp_data_path
+from env_wapper.simple_tag.simple_tag import Simple_Tag
+from utils.datatype_transform import dcn
+from utils.get_exp_data_path import get_exp_data_path
 from torch.utils.tensorboard import SummaryWriter
 import argparse
 import os
-from DRL_MARL_homework.MBAM.policy.MBAM_OM_MH import MBAM_OM_MH
-from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
+from policy.MBAM_OM_MH import MBAM_OM_MH
+from baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
 n_state = 20
 n_oppo_action = [5, 5, 5]
 n_action = 5

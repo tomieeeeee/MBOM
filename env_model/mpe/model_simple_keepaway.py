@@ -3,9 +3,9 @@ sys.path.append('/home/lenovo/文档/CodeWorkspace/RL')
 import torch
 import torch.nn as nn
 import numpy as np
-from DRL_MARL_homework.MBAM.env_wapper.mpe.simple_keepaway import Simple_Keep_away
-from DRL_MARL_homework.MBAM.utils.datatype_transform import dcn
-from DRL_MARL_homework.MBAM.utils.get_exp_data_path import get_exp_data_path
+from env_wapper.mpe.simple_keepaway import Simple_Keep_away
+from utils.datatype_transform import dcn
+from utils.get_exp_data_path import get_exp_data_path
 from torch.utils.tensorboard import SummaryWriter
 import argparse
 import os
