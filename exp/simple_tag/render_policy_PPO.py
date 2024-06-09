@@ -25,32 +25,36 @@ if __name__ == '__main__':
     parser.add_argument("--rnn_mixer", type=bool, default=False, help="True or False")
     args = parser.parse_args()
 
-    MOD = "ppo vs mbam" # or "mbam vs ppo"
-    if MOD == "ppo vs mbam":
+    MOD = "ppo vs ppo" # or "mbam vs ppo"
+    if MOD == "ppo vs ppo":
         file_dir = "D:/document/MBAM/data/Simple_Tag/"
-        player1_file = file_dir + "PPO_MH_player1_rank0_iter30000.ckp"
-        player2_file = file_dir + "MBAM_player2_iter30000.ckp"
+        player1_file = file_dir + "PPO_MH_player1__player1_iter13200.ckp"
+        player2_file = file_dir + "PPO_player2_player2_iter13200.ckp"
         player1_type = "ppo_mh" # "mbam_mh_om_mh"
         player2_type = "mbam_om_mh"
-
+          #PPO_MH_player1__player1_iter71300——PPO有追逐效果
         player1_ctor = None
         player2_ctor = None
         agent1 = PPO_MH.load_model(filepath=player1_file, args=args, logger=None, device=args.device)
-        agent2 = MBAM_OM_MH.load_model(filepath=player2_file, args=args, logger=None, device=args.device, env_model=None)
+        agent2 = PPO.load_model(filepath=player2_file, args=args, logger=None, device=args.device)
         env = Simple_Tag()
+        touch = 0
         agents = [agent1, agent2]
         for i in range(100):
             s = env.reset()
             while True:
-                time.sleep(0.2)
+                time.sleep(0.02)
                 env.render()
                 action_info1 = agent1.choose_action(state=s[0])
                 oppo_a = [a.item() for a in action_info1[0]]
-                a = agent2.choose_action(state=s[1], oppo_hidden_prob=action_info1[5])[0].item()
+                #a = agent2.choose_action(state=s[1], oppo_hidden_prob=action_info1[5])[0].item()
+                a = agent2.choose_action(state=s[1], oppo_hidden_prob=None)[0].item()
                 actions = [oppo_a, a]
                 s_, rew, done, _ = env.step(actions)
                 if rew[0] >= 10:
-                    print("touch!!!!!!!")
+                    touch+=1
+                    print("epoch",i+1)
+                    print("touch",touch)
                 s = s_
                 if done:
                     break
@@ -65,7 +69,7 @@ if __name__ == '__main__':
         player1_ctor = None
         player2_ctor = None
         agent1 = MBAM_MH.load_model(filepath=player1_file, args=args, logger=None, device=args.device, env_model=None)
-        agent2 = PPO.load_model(filepath=player2_file, args=args, logger=None, device=args.device)
+        agent2 = PPO_MH.load_model(filepath=player2_file, args=args, logger=None, device=args.device)
         env = Simple_Tag()
         agents = [agent1, agent2]
         for i in range(100):

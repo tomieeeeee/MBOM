@@ -15,7 +15,7 @@ class Simple_Tag(object):
         self.eps_max_step = eps_max_step
         self.cur_step = 0
 
-        self.env = make_env('simple_tag_v2', is_contain_done=False)
+        self.env = make_env('simple_tag_v7', is_contain_done=False)
 
     def obs_trans(self, raw_obs):
         """state is the agent's observation"""

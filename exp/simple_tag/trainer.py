@@ -34,8 +34,10 @@ def simple_tag_trainer(args, logger):
             global_mbam = MBAM.load_model(continue_train_path, args, logger=logger, device=args.device, env_model=None)
         else:
             """normal train"""
-            global_mbam = MBAM_OM_MH(args=args, conf=player2_conf, name="simpletag2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn, env_model=None, device=args.device)
-        global_buffer = PPO_OM_MH_Buffer(args=args, conf=global_mbam.conf, name=global_mbam.name, actor_rnn=args.actor_rnn, device=args.device)
+            global_mbam = PPO(args=args, conf=player2_conf, name="simpletag2", logger=logger,  actor_rnn=args.actor_rnn, device=args.device)
+        
+            #global_mbam = MBAM_OM_MH(args=args, conf=player2_conf, name="simpletag2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn, env_model=None, device=args.device)
+        global_buffer = PPO_Buffer(args=args, conf=global_mbam.conf, name=global_mbam.name, actor_rnn=args.actor_rnn, device=args.device)
         processes = []
         for rank in range(args.ranks):
             p = mp.Process(target=worker, args=(args, logger.root_dir, rank, channel_in[rank], channel_out[rank]))
@@ -87,10 +89,12 @@ def worker(args, root_dir, rank, channel_out, channel_in):
     env_model = None
     logger = Logger(root_dir, "worker", rank)
     ppo = PPO_MH(args, player1_conf, name="player1_rank{}".format(rank), logger=logger, actor_rnn=args.actor_rnn, device=args.device)
-    mbam = MBAM_OM_MH(args=args, conf=player2_conf, name="player2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model, device=args.device)
+    #mbam = MBAM_OM_MH(args=args, conf=player2_conf, name="player2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model, device=args.device)
+    mbam = PPO(args=args, conf=player2_conf, name="player2", logger=logger, actor_rnn=args.actor_rnn, device=args.device)
+    
     agents = [ppo, mbam]
     buffers = [PPO_MH_Buffer(args=args, conf=agents[0].conf, name=agents[0].name, actor_rnn=args.actor_rnn, device=args.device),
-               PPO_OM_MH_Buffer(args=args, conf=agents[1].conf, name=agents[1].name, actor_rnn=args.actor_rnn, device=args.device)]
+               PPO_Buffer(args=args, conf=agents[1].conf, name=agents[1].name, actor_rnn=args.actor_rnn, device=args.device)]
     logger.log_param(args, [agent.conf for agent in agents], rank=rank)
     global_step = 0
     for epoch in range(1, args.max_epoch + 1):

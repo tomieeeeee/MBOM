@@ -336,7 +336,9 @@ class PPO_Buffer(object):
         data = episode_memory.get_data()
         n_batch = data["state"].shape[0]
         for k in data.keys():
-            assert data[k].shape[0] == n_batch, "input size error"
+         #   assert data[k].shape[0] == n_batch, "input size error"
+         if k is not 'oppo_hidden_prob':
+                assert data[k].shape[0] == n_batch, "input size error"
 
         # cal GAE-Lambda advantage and rewards-to-go
         reward = data["reward"]

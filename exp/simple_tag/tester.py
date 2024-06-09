@@ -34,7 +34,7 @@ def simple_tag_tester(args, logger, **kwargs):
     player1_model_file_list.sort()
     '''get goalkeeper model file'''
     if args.player2_is_ppo:
-        player2_ckp = get_exp_data_path() + "/Simple_Tag/Player2/ppo/PPO_player2_iter20000.ckp"
+        player2_ckp = get_exp_data_path() + "/Simple_Tag/PPO_player2_iter30000.ckp"
     else:
         player2_ckp = get_exp_data_path() + "/Simple_Tag/MBAM_player2_iter7500_run.ckp"
 
@@ -44,6 +44,7 @@ def simple_tag_tester(args, logger, **kwargs):
     for player1_id, file in enumerate(player1_model_file_list):
         process_count += 1
         res = pool.apply_async(test_worker, (args, logger.root_dir, player1_id, file, player2_ckp, logger.seed, player1_conf, player2_conf))
+        
         #res = test_worker(args, logger.root_dir, player1_id, file, player2_ckp, logger.seed, player1_conf, player2_conf)
         res_l.append(res)
         if process_count == args.test_mp:
@@ -63,11 +64,15 @@ def test_worker(args, root_dir, player1_id, player1_file, player2_ckp, seed, pla
     cur_logger = Logger(root_dir, "rank", player1_id)
     '''prepare env'''
     env = Simple_Tag(args.eps_max_step)
-    env_model = simple_tag_env_model(args.device)
+    #env_model = simple_tag_env_model(args.device)
+    env_model = None
+    logger = Logger(root_dir, "worker", 0)
     '''prepare agents'''
     if args.test_mode == 0 or args.test_mode == 1:
-        #agent1 = PPO(args, shooter_conf, name="shooter{}".format(shooter_id), logger=cur_logger, actor_rnn=args.actor_rnn, device=args.device)
-        agent1 = PPO_MH.load_model(player1_file, args, cur_logger, args.device)
+        
+        agent1 = PPO_MH(args, player1_conf, name="player1_", logger=logger,actor_rnn=args.actor_rnn, device=args.device)
+        #agent1 = PPO_MH.load_model(player1_file, args, cur_logger, args.device)
+
     elif args.test_mode == 2:
         agent1 = MBAM_MH.load_model(player1_file, args, cur_logger, args.device, env_model=None)
         agent1.agent_idx = 0
@@ -79,7 +84,9 @@ def test_worker(args, root_dir, player1_id, player1_file, player2_ckp, seed, pla
     #agent2 = MBAM(args=args, conf=goalkeeper_conf, name="goalkeeper", logger=cur_logger, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model, device=args.device)
     if args.player2_is_ppo:
         try:
-            agent2 = PPO.load_model(player2_ckp, args, cur_logger, args.device)
+            agent2 = PPO(args=args, conf=player2_conf, name="player2", logger=logger,actor_rnn=args.actor_rnn, device=args.device)
+    
+            #agent2 = PPO.load_model(player2_ckp, args, cur_logger, args.device)
             agent2.name = agent2.name + "_player2"
             buffer2 = PPO_Buffer(args, player2_conf, agent2.name, actor_rnn=args.actor_rnn, device=args.device)
         except Exception as e:
@@ -101,7 +108,8 @@ def test_worker(args, root_dir, player1_id, player1_file, player2_ckp, seed, pla
     if args.prefix == "test":
         agent1.conf["v_learning_rate"] = 0.01
         agent1.conf["a_learning_rate"] = 0.01
-
+        agent2.conf["v_learning_rate"] = 0.01
+        agent2.conf["a_learning_rate"] = 0.01
     if player2_conf is not None:
         agent2.conf = player2_conf
     if args.prefix == "test":
@@ -120,7 +128,7 @@ def test_worker(args, root_dir, player1_id, player1_file, player2_ckp, seed, pla
         cur_logger.log("rank:{}! epoch:{} start!".format(player1_id, epoch))
         '''collect_trajectory'''
         try:
-            memory, scores, global_step, touch_times = collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False)
+            memory, scores, global_step, touch_times = collect_trajectory_MH(agents, env, args, global_step, is_prophetic=True)
         except Exception as e:
             print(e)
         '''learn'''

@@ -35,8 +35,8 @@ player1_conf = {
     "a_learning_rate": 0.001,
     "gamma": 0.99,  # value discount factor
     "lambda": 0.99,  # general advantage estimator
-    "epsilon": 0.115,  # ppo clip param
-    "entcoeff": 0.0015,  #0.0015
+    "epsilon": 0.3,  # ppo clip param#越大越探索
+    "entcoeff": 0.01,  #0.0015#越小越探索，收敛可能变慢
     "a_update_times": 10,
     "v_update_times": 10,
     "buffer_memory_size": 6000, #eps_per_epoch * save_per_epoch = 10 * 30
@@ -83,8 +83,8 @@ player2_conf = {
     "a_learning_rate": 0.001,
     "gamma": 0.99,  # value discount factor
     "lambda": 0.99,  # general advantage estimator
-    "epsilon": 0.115,  # ppo clip param
-    "entcoeff": 0.0015,
+    "epsilon": 0.3,  # ppo clip param
+    "entcoeff": 0.01,
     "a_update_times": 10,
     "v_update_times": 10,
     # ppo buffer setting
