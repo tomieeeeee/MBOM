@@ -1,0 +1,1 @@
+model successful load, D:/document/MBAM/data/Simple_Tag/Player1/for_test_0\PPO_MH_player1_rank0_iter30000.ckp

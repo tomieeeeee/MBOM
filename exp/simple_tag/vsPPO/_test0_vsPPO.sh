@@ -2,7 +2,7 @@
 
 # Begin experiment#
 for _ in 1 2 3 4 5;do
-  python3.6 main.py \
+  python main.py \
   --exp_name "simple_tag_ppo_0_vs_ppo_5000" \
   --env "simple_tag" \
   --prefix "test" \

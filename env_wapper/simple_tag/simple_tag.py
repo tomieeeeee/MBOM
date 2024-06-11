@@ -1,21 +1,23 @@
-from DRL_MARL_homework.MBAM.env_wapper.mpe.make_env import make_env
-from DRL_MARL_homework.MBAM.utils.simple_tag_action_mapping import dis_idx_to_dis_onehot, idx_to_dis_idx
+import sys
+sys.path.append("D:/document/3v3")
+from utils.simple_tag_action_mapping import dis_idx_to_dis_onehot, idx_to_dis_idx
+from env_wapper.mpe.make_env import make_env
 import numpy as np
 # 1 v 3  and  agent speed is 1.3
 
 class Simple_Tag(object):
     def __init__(self, eps_max_step=100, version="simple_rps"):
         super(Simple_Tag, self).__init__()
-        self.n_agent = 4
-        self.n_state = 20  #以自己为中心
-        self.n_action = 5
-        self.n_opponent_action = 15
+        self.n_agent = 12
+        self.n_state = 52  #以自己为中心,与初始化智能体数量有关，计算方法见simple_tag_v3
+        self.n_action = 30
+        self.n_opponent_action = 30
 
         self.env_state_running = False
         self.eps_max_step = eps_max_step
         self.cur_step = 0
-
-        self.env = make_env('simple_tag_v2', is_contain_done=False)
+        #self.env是environment
+        self.env = make_env('simple_tag_v6', is_contain_done=False)
 
     def obs_trans(self, raw_obs):
         """state is the agent's observation"""
@@ -24,6 +26,7 @@ class Simple_Tag(object):
     def reset(self):
         self.cur_step = 0
         self.env_state_running = True
+        #指multiagent中的environment.py中的reset方法，返回所有polic_agents在simple_tag_v2中的observation
         return self.obs_trans(self.env.reset())
 
     def step(self, actions):
@@ -35,13 +38,20 @@ class Simple_Tag(object):
         '''
         self.cur_step += 1
         assert self.env_state_running == True, "Env is stoped, please reset()"
+        #print(actions)
+        #print(actions[0][1])
+        
         #oppo_a = dis_idx_to_dis_onehot(idx_to_dis_idx(actions[0]))
-        oppo_a = dis_idx_to_dis_onehot(actions[0])
-        a = [np.eye(self.n_action)[actions[1]]]
+        oppo_a = dis_idx_to_dis_onehot(actions[0])#[array([1., 0., 0., 0., 0.]), array([0., 1., 0., 0., 0.]), array([0., 1., 0., 0., 0.])]
+        #print("oppo_a",oppo_a)
+        #a = [np.eye(self.n_action)[actions[1]]]
+        a = dis_idx_to_dis_onehot(actions[1])#[array([0., 1., 0., 0., 0.]), array([0., 0., 0., 1., 0.]), array([1., 0., 0., 0., 0.])]
+        
+        #print("a",a)
         actions = oppo_a + a
         done = False
         obs_, rew, d, info = self.env.step(actions)
-        rew = [rew[0], rew[-1]] #only return the opponent's reward and the agent's reward
+        #rew = [rew[0], rew[-1]] #only return the opponent's reward and the agent's reward
         if np.any(d == True):
             done = True
             self.env_state_running = False
@@ -52,16 +62,17 @@ class Simple_Tag(object):
         #     if (np.abs(obs_[i][1:]) >= obs_[i][0]).any() == True:
         #         done = True
         #         rew[i] = -self.eps_max_step
+        #print("simple_tag",rew)
         return self.obs_trans(obs_), rew, done, info
 
     def render(self):
         self.env.render()
 
 if __name__ == "__main__":
-    from DRL_MARL_homework.MBAM.policy.MBAM import MBAM
-    from DRL_MARL_homework.MBAM.baselines.PPO import PPO
-    from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH
-    from DRL_MARL_homework.MBAM.config.simple_tag_conf import player1_conf, player2_conf
+    from policy.MBAM import MBAM
+    from baselines.PPO import PPO
+    from baselines.PPO_MH import PPO_MH
+    from config.simple_tag_conf import player1_conf, player2_conf
     import argparse
     import time
     parser = argparse.ArgumentParser(description="")
@@ -208,7 +219,7 @@ if __name__ == "__main__":
     env = Simple_Tag()
     agent1 = PPO_MH(args=args, conf=player1_conf, name="player1", logger=None, actor_rnn=False, device="cpu")
     agent2 = PPO(args=args, conf=player2_conf, name="player2", logger=None, actor_rnn=False, device="cpu")
-    for i in range(10000):
+    for i in range(100):
         step = 0
         s = env.reset()
         while True:
@@ -218,10 +229,13 @@ if __name__ == "__main__":
             oppo_a = [a.item() for a in agent1.choose_action(state=s[0])[0]]
             a = agent2.choose_action(state=s[1])[0].item()
             actions = [oppo_a, a]
+            print(oppo_a)
+            print(a)
+            print(actions)
             s_, r, d, _ = env.step(actions)
             step += 1
             s = s_
-            print(r)
+            
             if d == True:
                 if step < 100:
                     pass

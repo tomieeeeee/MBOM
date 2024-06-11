@@ -1,9 +1,11 @@
-from DRL_MARL_homework.MBAM.env_wapper.mpe.make_env import make_env
+import sys
+sys.path.append("..")
+from env_wapper.mpe.make_env import make_env
 import numpy as np
 
 
 if __name__ == "__main__":
-    env = make_env('simple_tag_v2', is_contain_done=False)
+    env = make_env('simple_tag_v3', is_contain_done=False)
 
 
     for i in range(100):

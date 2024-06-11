@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
-from DRL_MARL_homework.MBAM.utils.plot_util import symmetric_ema
+from utils.plot_util import symmetric_ema
 import matplotlib.pyplot as plt
 import math
 
@@ -29,7 +29,7 @@ def load_log_to_numpy(exp_path, keys):
         :return:dict("steps":..., "epochs":...)
                 Agent1_Score: np.ndarry [n_opponent, n_episode]
         '''
-        # epochs_key = ["Entropy", "KL", "Loss_a", "Loss_v", "Score"]
+        # epochs_key = ["Entropy", "KL", "Loss_a", "Loss_v", ""]
         # steps_key = ["Loss_oppo", "Mix_entropy", "om_layer0_mix_ratio", "om_layer1_mix_ratio", "om_layer2_mix_ratio"]
         epochs_key = ["Entropy", "KL", "Loss_a", "Loss_v", "Score"]
         steps_key = ["Loss_oppo", "Mix_entropy", "om_layer0_mix_ratio", "om_layer1_mix_ratio", "om_layer2_mix_ratio"]

@@ -1,0 +1,3 @@
+global, epoch:1 param shared!
+global, epoch:1 param updated!
+global, epoch:2 param shared!

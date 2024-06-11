@@ -1,6 +1,6 @@
 from copy import deepcopy
-from DRL_MARL_homework.MBAM.base.MLP_MH import MLP_MH
-from DRL_MARL_homework.MBAM.utils.torch_tool import soft_update
+from base.MLP_MH import MLP_MH
+from utils.torch_tool import soft_update
 from collections import OrderedDict
 import numpy as np
 import types
@@ -149,7 +149,7 @@ class OM_MH_Buffer(object):
 if __name__ == "__main__":
     import argparse
     import numpy as np
-    from DRL_MARL_homework.MBAM.config.simple_tag_conf import player2_conf
+    from config.simple_tag_conf import player2_conf
 
     parser = argparse.ArgumentParser(description="test")
     parser.add_argument("--num_om_layers", type=int, default=2, help="Number of trajectories")

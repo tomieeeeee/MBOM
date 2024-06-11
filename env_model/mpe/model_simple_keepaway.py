@@ -1,11 +1,11 @@
 import sys
-sys.path.append('/home/lenovo/文档/CodeWorkspace/RL')
+sys.path.append("D:/document/3v3")
 import torch
 import torch.nn as nn
 import numpy as np
-from DRL_MARL_homework.MBAM.env_wapper.mpe.simple_keepaway import Simple_Keep_away
-from DRL_MARL_homework.MBAM.utils.datatype_transform import dcn
-from DRL_MARL_homework.MBAM.utils.get_exp_data_path import get_exp_data_path
+from env_wapper.mpe.simple_keepaway import Simple_Keep_away
+from utils.datatype_transform import dcn
+from utils.get_exp_data_path import get_exp_data_path
 from torch.utils.tensorboard import SummaryWriter
 import argparse
 import os
@@ -91,7 +91,7 @@ def train(args):
     batch_size = 512
     cur_idx = 0
     cur_size = 0
-
+    
     buf_s = np.zeros((buf_max_size, n_state), dtype=np.float32)
     buf_a = np.zeros((buf_max_size, n_action), dtype=np.int32)
     buf_oppo_a = np.zeros((buf_max_size, n_oppo_action), dtype=np.int32)
@@ -136,6 +136,7 @@ def train(args):
         optimizer.step()
         if i % SAVE_PER_LEARN == 0:
             torch.save(env_model, path + "/%i.pt" % i)
+            print("ok")
     writer.close()
 
 def gen_mem(env):
@@ -173,10 +174,12 @@ def load_env_model(device):
 def __main__(args):
     if args.train:
         train(args)
+        print("123")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch RL model Training')
     parser.add_argument('--train', default=False, type=bool, help='')
     parser.add_argument('--device', default="cuda", type=str, help='')
-    __main__(parser.parse_args())
+    ##########__main__(parser.parse_args())
+    train(parser.parse_args())
     pass

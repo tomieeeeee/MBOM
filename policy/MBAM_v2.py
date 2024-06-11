@@ -1,10 +1,10 @@
 import sys
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
-from DRL_MARL_homework.MBAM.base.MLP import MLP
-from DRL_MARL_homework.MBAM.utils.datatype_transform import dcn
-from DRL_MARL_homework.MBAM.baselines.PPO import PPO
-from DRL_MARL_homework.MBAM.policy.Opponent_Model import Opponent_Model, OM_Buffer
-from DRL_MARL_homework.MBAM.utils.torch_tool import soft_update
+from base.MLP import MLP
+from utils.datatype_transform import dcn
+from baselines.PPO import PPO
+from policy.Opponent_Model import Opponent_Model, OM_Buffer
+from utils.torch_tool import soft_update
 import torch
 from torch.distributions.categorical import Categorical
 import numpy as np
@@ -476,7 +476,7 @@ class MBAM_v2(PPO):
         :return: None
         '''
         if not hasattr(self, "mixer"):
-            from DRL_MARL_homework.MBAM.base.Actor_RNN import Actor_RNN
+            from base.Actor_RNN import Actor_RNN
             import itertools
             self.mixer = Actor_RNN(input=self.conf["num_om_layers"],
                                    output=self.conf["num_om_layers"],
@@ -708,9 +708,9 @@ if __name__ == "__main__":
     #
     # endtime = time.time()
     # print("time", endtime - starttime)
-    from DRL_MARL_homework.MBAM.env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env as football_env
-    from DRL_MARL_homework.MBAM.env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import load_env_model as football_env_model
-    from DRL_MARL_homework.MBAM.env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import ENV_football_1_vs_1_penalty_kick
+    from env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env as football_env
+    from env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import load_env_model as football_env_model
+    from env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import ENV_football_1_vs_1_penalty_kick
     env = football_env()
     env_model = football_env_model(args.device)
     mbam = MBAM(args=args, conf=conf, name="AAA", logger=None, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model,

@@ -1,4 +1,4 @@
-from DRL_MARL_homework.MBAM.env_wapper.mpe.make_env import make_env
+from env_wapper.mpe.make_env import make_env
 import numpy as np
 
 
@@ -52,8 +52,8 @@ class Simple_RPS(object):
         self.env.render()
 
 if __name__ == "__main__":
-    from DRL_MARL_homework.MBAM.policy.MBAM import MBAM
-    from DRL_MARL_homework.MBAM.baselines.PPO import PPO
+    from policy.MBAM import MBAM
+    from baselines.PPO import PPO
     import argparse
     import time
     parser = argparse.ArgumentParser(description="")

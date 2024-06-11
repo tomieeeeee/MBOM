@@ -1,8 +1,8 @@
 import sys
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
-from DRL_MARL_homework.MBAM.base.MLP_MH import MLP_MH
-from DRL_MARL_homework.MBAM.base.MLP import MLP
-from DRL_MARL_homework.MBAM.base.Actor_RNN import Actor_RNN
+from base.MLP_MH import MLP_MH
+from base.MLP import MLP
+from base.Actor_RNN import Actor_RNN
 from torch.optim import Adam
 class Base_ActorCritic_MH(object):
     def __init__(self, a_n_state, v_n_state, n_action, a_hidden_layers, v_hidden_layers, actor_rnn, args, conf, name, logger):
@@ -33,12 +33,17 @@ class Base_ActorCritic_MH(object):
         actor_net = MLP_MH
         if self.actor_rnn:
             actor_net = Actor_RNN
+        #print("a_n_state",a_n_state)
+        #print("n_action",n_action)
+        #print("v_n_state",v_n_state)
         self.a_net = actor_net(input=a_n_state,
                                output=n_action,
                                hidden_layers_features=a_hidden_layers,
                                output_type="multi_discrete")
+        
         self.v_net = MLP(input=v_n_state,
-                         output=1,
+                         output=1,#######origin
+
                          hidden_layers_features=v_hidden_layers,
                          output_type=None)
         self.v_optimizer = Adam(self.v_net.parameters(), lr=self.conf["v_learning_rate"])

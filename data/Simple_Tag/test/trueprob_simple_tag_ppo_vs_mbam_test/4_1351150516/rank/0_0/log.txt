@@ -1,0 +1,30 @@
+model successful load, D:/document/MBAM/data/Simple_Tag/Player1/for_test_1\PPO_MH_player1_rank0_iter30000.ckp
+model successful load, D:/document/MBAM/data/Simple_Tag/Player2/ppo/PPO_player2_iter20000.ckp
+rank:0! epoch:1 start!
+rank:0! epoch:2 start!
+rank:0! epoch:3 start!
+rank:0! epoch:4 start!
+rank:0! epoch:5 start!
+rank:0! epoch:6 start!
+rank:0! epoch:7 start!
+rank:0! epoch:8 start!
+rank:0! epoch:9 start!
+rank:0! epoch:10 start!
+rank:0! epoch:11 start!
+rank:0! epoch:12 start!
+rank:0! epoch:13 start!
+rank:0! epoch:14 start!
+rank:0! epoch:15 start!
+rank:0! epoch:16 start!
+rank:0! epoch:17 start!
+rank:0! epoch:18 start!
+rank:0! epoch:19 start!
+rank:0! epoch:20 start!
+rank:0! epoch:21 start!
+rank:0! epoch:22 start!
+rank:0! epoch:23 start!
+rank:0! epoch:24 start!
+rank:0! epoch:25 start!
+rank:0! epoch:26 start!
+rank:0! epoch:27 start!
+rank:0! epoch:28 start!

@@ -1,14 +1,15 @@
 import sys
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
-from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH
-from DRL_MARL_homework.MBAM.policy.Opponent_Model import Opponent_Model, OM_Buffer
-from DRL_MARL_homework.MBAM.utils.torch_tool import soft_update
+from baselines.PPO_MH import PPO_MH
+from policy.Opponent_Model import Opponent_Model, OM_Buffer
+from utils.torch_tool import soft_update
 import torch
 import numpy as np
 from memory_profiler import profile
 
 class MBAM_MH(PPO_MH):
     def __init__(self, args, conf, name, logger, agent_idx, actor_rnn=False, env_model=None, device=None, rnn_mixer=False):
+        #如果conf["num_om_layers"]的值小于1，程序将抛出AssertionError并显示错误消息："least have 1 layer opponent model"（至少拥有1层对手模型）
         assert conf["num_om_layers"] >= 1, "least have 1 layer opponent model"
         super(PPO_MH, self).__init__(a_n_state=conf["n_state"] + conf["n_opponent_action"] if args.true_prob else conf["n_state"] + conf["opponent_model_hidden_layers"][-1],
                                   v_n_state=conf["n_state"],
@@ -224,6 +225,7 @@ class MBAM_MH(PPO_MH):
                 oppo_hidden_prob = self._get_mixed_om_hidden_prob(state)
             self.oppo_hidden_prob = oppo_hidden_prob.clone().detach().cpu()
         if self.actor_rnn:
+            #调用MBAM_MH父类PPO_MH的choose_action方法
             return super(MBAM_MH, self).choose_action(state, greedy, oppo_hidden_prob=oppo_hidden_prob, hidden_state=hidden_state)
         return super(MBAM_MH, self).choose_action(state, greedy, oppo_hidden_prob=oppo_hidden_prob)
 
@@ -474,7 +476,7 @@ class MBAM_MH(PPO_MH):
         :return: None
         '''
         if not hasattr(self, "mixer"):
-            from DRL_MARL_homework.MBAM.base.Actor_RNN import Actor_RNN
+            from base.Actor_RNN import Actor_RNN
             import itertools
             self.mixer = Actor_RNN(input=self.conf["num_om_layers"],
                                    output=self.conf["num_om_layers"],
@@ -515,7 +517,7 @@ class MBAM_MH(PPO_MH):
         }
         torch.save(obj, filepath, _use_new_zipfile_serialization=False)
         self.logger.log("model saved in {}".format(filepath))
-
+    
     @staticmethod
     def load_model(filepath, args, logger, device, **kwargs):
         assert "env_model" in kwargs.keys(), "must input env_model"
@@ -526,9 +528,11 @@ class MBAM_MH(PPO_MH):
         agent_idx = checkpoint["agent_idx"]
         actor_rnn = checkpoint["actor_rnn"]
         try:
-            mbam = MBAM_MH(args, conf, name, logger, agent_idx, actor_rnn, kwargs["env_model"], device, rnn_mixer=args.rnn_mixer)
+        
+           mbam = MBAM_MH(args, conf, name, logger, agent_idx, actor_rnn, kwargs["env_model"], device, rnn_mixer=args.rnn_mixer)
+           
         except Exception as e:
-            print(e)
+           print(e)
 
         mbam.v_net.load_state_dict(checkpoint['v_net_state_dict'])
         mbam.a_net.load_state_dict(checkpoint['a_net_state_dict'])
@@ -709,9 +713,9 @@ if __name__ == "__main__":
     #
     # endtime = time.time()
     # print("time", endtime - starttime)
-    from DRL_MARL_homework.MBAM.env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env as football_env
-    from DRL_MARL_homework.MBAM.env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import load_env_model as football_env_model
-    from DRL_MARL_homework.MBAM.env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import ENV_football_1_vs_1_penalty_kick
+    from env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env as football_env
+    from env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import load_env_model as football_env_model
+    from env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import ENV_football_1_vs_1_penalty_kick
     env = football_env()
     env_model = football_env_model(args.device)
     mbam = MBAM(args=args, conf=conf, name="AAA", logger=None, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model,

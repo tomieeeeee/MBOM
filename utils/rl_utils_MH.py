@@ -1,7 +1,8 @@
+import sys
 import numpy as np
 import torch
 from memory_profiler import profile
-from DRL_MARL_homework.MBAM.utils.simple_tag_action_mapping import dis_idx_to_idx, idx_to_onehot
+from utils.simple_tag_action_mapping import dis_idx_to_idx, idx_to_onehot
 def discount_cumsum(x, discount):
     import scipy.signal
     """
@@ -76,13 +77,17 @@ class Episode_Memory_OM_MH():
     def __init__(self, output_dim):
         self.next_idx = 0
         self.state = []
-        self.action = []
-        self.logp_a = []
-        self.entropy = []
+        #源代码self.action = []
+        #源代码self.logp_a = []
+        #源代码self.entropy = []
+        self.action = [[] for _ in range(output_dim)]
+        self.logp_a = [[] for _ in range(output_dim)]
+        self.entropy = [[] for _ in range(output_dim)]
         self.value = []
         self.oppo_hidden_prob = [[] for _ in range(output_dim)]
         self.hidden_state = []
         self.reward = []
+        self.output_dim = output_dim
 
         self.final_state = None
         pass
@@ -100,11 +105,17 @@ class Episode_Memory_OM_MH():
         [self.oppo_hidden_prob[i].append(oppo_hidden_prob[i]) for i in range(len(oppo_hidden_prob))]
     def store_action_info(self, choose_action_return):
         #action, logp_a, entropy, value, action_prob, hidden_prob, hidden_state
-        self.action.append(choose_action_return[0])
-        self.logp_a.append(choose_action_return[1])
-        self.entropy.append(choose_action_return[2])
+        #源代码self.action.append(choose_action_return[0])
+        #源代码self.logp_a.append(choose_action_return[1])
+        #源代码self.entropy.append(choose_action_return[2])
+        for i in range(self.output_dim):
+            self.action[i].append(choose_action_return[0][i])
+            self.logp_a[i].append(choose_action_return[1][i])
+            self.entropy[i].append(choose_action_return[2][i])
+
         self.value.append(choose_action_return[3])
         self.hidden_state.append(choose_action_return[6])
+    '''源代码
     def get_data(self, is_meta_mapg=False):
         data = dict({
             "state":np.stack(self.state),
@@ -114,6 +125,25 @@ class Episode_Memory_OM_MH():
             "value":np.stack(self.value).squeeze(axis=1),
             "reward":np.stack(self.reward).reshape(-1, 1),
             "oppo_hidden_prob":[np.stack(self.oppo_hidden_prob[i]).squeeze(axis=1) for i in range(len(self.oppo_hidden_prob))],
+            "hidden_state":np.stack(self.hidden_state).squeeze(axis=1) if np.any(np.stack(self.hidden_state) != None) else np.stack(self.hidden_state),
+        })
+        if hasattr(self, "oppo_logp_a"):
+            data["oppo_logp_a"] = np.stack(self.oppo_logp_a)
+        return data
+    '''
+    def get_data(self, is_meta_mapg=False):
+        #print("action",(np.stack(self.action[0])))
+        #print("np.stack(oppo_hidden_prob)",np.stack(self.oppo_hidden_prob))
+        #print("np.stack(hidden_state)",np.stack(self.hidden_state))
+        
+        data = dict({
+            "state":np.stack(self.state),
+            "action":[np.stack(self.action[i]) for i in range(self.output_dim)],
+            "logp_a":torch.stack(self.logp_a) if is_meta_mapg else [np.stack(self.logp_a[i]) for i in range(self.output_dim)],
+            "entropy":[np.stack(self.entropy[i]) for i in range(self.output_dim)],
+            "value":np.stack(self.value).squeeze(axis=1),
+            "reward":np.stack(self.reward).reshape(-1, 1),
+            "oppo_hidden_prob":[np.stack(self.oppo_hidden_prob[i]).squeeze(axis=1) for i in range(len(self.oppo_hidden_prob))],#源代码np.stack(self.oppo_hidden_prob).squeeze(axis=1),
             "hidden_state":np.stack(self.hidden_state).squeeze(axis=1) if np.any(np.stack(self.hidden_state) != None) else np.stack(self.hidden_state),
         })
         if hasattr(self, "oppo_logp_a"):
@@ -158,9 +188,15 @@ class Episode_Memory_MH():
             self.action[i].append(choose_action_return[0][i])
             self.logp_a[i].append(choose_action_return[1][i])
             self.entropy[i].append(choose_action_return[2][i])
+   
+ 
         self.value.append(choose_action_return[3])
         self.hidden_state.append(choose_action_return[6])
     def get_data(self, is_meta_mapg=False):
+        #print("action",(np.stack(self.action[0])))
+        #print("np.stack(oppo_hidden_prob)",np.stack(self.oppo_hidden_prob))
+        #print("np.stack(hidden_state)",np.stack(self.hidden_state))
+        
         data = dict({
             "state":np.stack(self.state),
             "action":[np.stack(self.action[i]) for i in range(self.output_dim)],
@@ -168,7 +204,7 @@ class Episode_Memory_MH():
             "entropy":[np.stack(self.entropy[i]) for i in range(self.output_dim)],
             "value":np.stack(self.value).squeeze(axis=1),
             "reward":np.stack(self.reward).reshape(-1, 1),
-            "oppo_hidden_prob":np.stack(self.oppo_hidden_prob).squeeze(axis=1),
+            "oppo_hidden_prob":[np.stack(self.oppo_hidden_prob[i]).squeeze(axis=1) for i in range(len(self.oppo_hidden_prob))],#源代码np.stack(self.oppo_hidden_prob).squeeze(axis=1),
             "hidden_state":np.stack(self.hidden_state).squeeze(axis=1) if np.any(np.stack(self.hidden_state) != None) else np.stack(self.hidden_state),
         })
         if hasattr(self, "oppo_logp_a"):
@@ -254,7 +290,7 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
         # Begin to collect trajectory
         state = env.reset()
         temp_memory = [Episode_Memory_MH(len(agents[0].conf["n_action"])), Episode_Memory_OM_MH(len(agents[1].conf["n_opponent_action"]))]
-
+         #temp_memory = [Episode_Memory_MH(len(agents[0].conf["n_action"])), Episode_Memory_MH(len(agents[1].conf["n_opponent_action"]))]
         while True:
             global_step += 1
             actions = [0, 0]
@@ -275,10 +311,16 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
                     action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx], oppo_hidden_prob=None, greedy=greedy)
                 elif type(agent).__name__ == "PPO_MH":
                     action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx], oppo_hidden_prob=None, greedy=greedy)
+
                 elif type(agent).__name__ == "MBAM_MH":
                     action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx], oppo_hidden_prob=oppo_hidden_prob[1-agent_idx] if is_prophetic == True else None)
                 elif type(agent).__name__ == "MBAM_OM_MH":
+                    #print("duishoude",oppo_hidden_prob[1 - agent_idx])
                     action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx], oppo_hidden_prob=oppo_hidden_prob[1 - agent_idx] if is_prophetic == True else None, greedy=greedy)
+                    #for i, lp in enumerate(action_info[0]):
+                    #       print(f"Shape of actionnnn[{i}]:", lp.shape)
+                    
+                    #sys.exit()
                 elif type(agent).__name__ == "Meta_mapg":
                     action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx])
                     # store oppo_log_a
@@ -287,7 +329,8 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
                     action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx], oppo_hidden_prob=oppo_hidden_prob[1-agent_idx] if is_prophetic == True else None, greedy=greedy)
                 else:
                     raise TypeError
-
+                
+                #print("action_info",action_info)
                 if args.prophetic_onehot:
                     raise NotImplementedError
                     temp_a = action_info[0].item()
@@ -295,9 +338,12 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
                     action_info = (action_info[0], action_info[1], action_info[2], action_info[3], action_info[4], oppo_hidden_prob[agent_idx], action_info[6])
                 else:
                     oppo_hidden_prob[agent_idx] = action_info[5]
+                #print("type(agent)",type(agent))
+                #print("index",agent_idx)
+                #print("oppo_hidden_prob",action_info[5])
                 # store action info
                 temp_memory[agent_idx].store_action_info(action_info)
-                # store oppo hidden prob
+                # store oppo hidden prob#把对手的action_info[5]作为oppo_hidden_prob储存
                 temp_memory[1 - agent_idx].store_oppo_hidden_prob(action_info[5])
                 # record
                 hidden_state[agent_idx] = action_info[6]
@@ -305,7 +351,8 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
                     #PPO_MH's action is multi head
                     actions[agent_idx] = [a.item() for a in action_info[0]]
                 else:
-                    actions[agent_idx] = action_info[0].item()
+                    #源代码actions[agent_idx] = action_info[0].item()
+                    actions[agent_idx] = [a.item() for a in action_info[0]]
             #env.render()
             # env interact
 
@@ -335,7 +382,7 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
                                                  Dis_mix_parameter=dis_mix_parameter, Dis_mix_prob=dis_mix_prob,
                                                  Hit_ratio_mix_parameter = hit_ratio_mix_parameter, Hit_ratio_mix_prob=hit_ratio_mix_prob,
                                                  **dis_layers_prob, **hit_ratio_layers)
-
+            #print("actions",actions)
             state_, reward, done, info = env.step(actions)
 
             assert args.env == "simple_tag", "env is not simple_tag!!!"
@@ -365,12 +412,15 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
             if done:
                 for i in range(len(agents)):
                     temp_memory[i].store_final_state(state_[i], info)
+                    
                     memories[i].append(temp_memory[i])
+                    #print("zheshishenme",memories[i])
                     scores[i].append(temp_memory[i].get_score())
                 agents[1].logger.log_performance(tag=agents[1].name + "/steps", iteration=global_step,
                                                  #Touch=touch_times
                                                  )
                 break
+    
     scores = [sum(scores[i])/len(scores[i]) for i in range(len(agents))]
     return memories, scores, global_step, touch_times/args.eps_per_epoch
 
@@ -575,16 +625,16 @@ def collect_trajectory_for_rnn_mixer(agents, env, args, global_step, is_propheti
     return memories, scores, global_step
 
 if __name__ == "__main__":
-    from DRL_MARL_homework.MBAM.baselines.PPO import PPO, PPO_Buffer
-    from DRL_MARL_homework.MBAM.policy.MBAM_MH import MBAM_MH
-    from DRL_MARL_homework.MBAM.policy.MBAM_OM_MH import MBAM_OM_MH
-    from DRL_MARL_homework.MBAM.baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
-    from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
-    from DRL_MARL_homework.MBAM.env_wapper.simple_tag.simple_tag import Simple_Tag
-    from DRL_MARL_homework.MBAM.utils.Logger import Logger
-    from DRL_MARL_homework.MBAM.config.simple_tag_conf import player1_conf, player2_conf
-    from DRL_MARL_homework.MBAM.env_wapper.simple_tag.simple_tag import Simple_Tag
-    from DRL_MARL_homework.MBAM.env_model.simple_tag.model_simple_tag import ENV_Simple_Tag
+    from baselines.PPO import PPO, PPO_Buffer
+    from policy.MBAM_MH import MBAM_MH
+    from policy.MBAM_OM_MH import MBAM_OM_MH
+    from baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
+    from baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
+    from env_wapper.simple_tag.simple_tag import Simple_Tag
+    from utils.Logger import Logger
+    from config.simple_tag_conf import player1_conf, player2_conf
+    from env_wapper.simple_tag.simple_tag import Simple_Tag
+    from env_model.simple_tag.model_simple_tag import ENV_Simple_Tag
     import time
     import argparse
     import numpy as np

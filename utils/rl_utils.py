@@ -105,6 +105,7 @@ def collect_trajectory(agents, env, args, global_step, is_prophetic=False, greed
                     #print("agent{} start choose_action, layers is {}".format(agent.agent_idx, agent.conf["num_om_layers"]))
                     action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx], oppo_hidden_prob=oppo_hidden_prob[1-agent_idx] if is_prophetic == True else None, greedy=greedy, global_step=global_step)
                     #temp_memory[agent_idx].mixed_action_prob = mixed_action_prob
+
                 elif type(agent).__name__ == "PPO":
                     action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx], oppo_hidden_prob=None, greedy=greedy)
                 elif type(agent).__name__ == "Meta_mapg":
@@ -382,10 +383,10 @@ def collect_trajectory_for_rnn_mixer(agents, env, args, global_step, is_propheti
 
 if __name__ == "__main__":
 
-    from DRL_MARL_homework.MBAM.policy.MBAM import MBAM
-    from DRL_MARL_homework.MBAM.baselines.PPO import PPO, PPO_Buffer
-    from DRL_MARL_homework.MBAM.env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env
-    from DRL_MARL_homework.MBAM.utils.Logger import Logger
+    from policy.MBAM import MBAM
+    from baselines.PPO import PPO, PPO_Buffer
+    from env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env
+    from utils.Logger import Logger
     import time
     import argparse
     import numpy as np

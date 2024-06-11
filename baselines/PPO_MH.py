@@ -1,8 +1,8 @@
 import sys
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
-from DRL_MARL_homework.MBAM.baselines.Base_ActorCritic_MH import Base_ActorCritic_MH
-from DRL_MARL_homework.MBAM.utils.datatype_transform import dcn
-from DRL_MARL_homework.MBAM.utils.rl_utils import discount_cumsum
+from baselines.Base_ActorCritic_MH import Base_ActorCritic_MH
+from utils.datatype_transform import dcn
+from utils.rl_utils import discount_cumsum
 import numpy as np
 import torch
 from torch.distributions.categorical import Categorical
@@ -55,7 +55,9 @@ class PPO_MH(Base_ActorCritic_MH):
         if self.device:
             a_state = a_state.to(self.device)
             v_state = v_state.to(self.device)
+        #print("yunxing",oppo_hidden_prob)
         if oppo_hidden_prob is not None:
+            
             if type(oppo_hidden_prob) is np.ndarray:
                 oppo_hidden_prob = torch.Tensor(oppo_hidden_prob).to(device=self.device)
             oppo_hidden_prob = oppo_hidden_prob.view((-1, self.conf["n_opponent_action"] if self.args.true_prob else
@@ -63,6 +65,7 @@ class PPO_MH(Base_ActorCritic_MH):
             if self.args.prophetic_onehot:
                 oppo_hidden_prob = torch.eye(self.conf["n_opponent_action"], device=self.device)[
                     torch.argmax(oppo_hidden_prob, dim=1)]
+            print("PPO a_state" ,  a_state)
             a_state = torch.cat([a_state, oppo_hidden_prob], dim=1)
         if hidden_state is not None:
             if type(hidden_state) is np.ndarray:
@@ -73,7 +76,8 @@ class PPO_MH(Base_ActorCritic_MH):
             action_prob, hidden_prob, hidden_state = self.a_net(a_state, hidden_state)
         else:
             action_prob, hidden_prob = self.a_net(a_state)
-        # print("action prob" , action_prob)
+        
+        
         if greedy:
             pi = Categorical(action_prob)
             _, action = torch.max(action_prob, dim=1)
@@ -324,7 +328,7 @@ class PPO_MH_Buffer(object):
 
         self.next_idx, self.max_size = 0, conf["buffer_memory_size"]
 
-    def store_memory(self, episode_memory, last_val=0):
+    def store_memory(self,  episode_memory, last_val=0):
         '''
         :param data : state, action, reward ,logp_a, value, hidden_state, oppo_hidden_prob
                     state: np.ndarray shape is (n_batch, n_state) float
@@ -339,6 +343,7 @@ class PPO_MH_Buffer(object):
                         should be V(s_T), the value function estimated for the last state.
         :return: None
         '''
+        #print("np.stack(self.oppo_hidden_prob)",episode_memory.oppo_hidden_prob)
         data = episode_memory.get_data()
         #data = episode_memory
         n_batch = data["state"].shape[0]
@@ -450,10 +455,10 @@ class PPO_MH_Buffer(object):
 
 if __name__ == "__main__":
     import argparse
-    from DRL_MARL_homework.MBAM.baselines.PPO import PPO, PPO_Buffer
-    from DRL_MARL_homework.MBAM.config.simple_tag_conf import player1_conf
+    from baselines.PPO import PPO, PPO_Buffer
+    from config.simple_tag_conf import player1_conf
     parser = argparse.ArgumentParser(description="test")
-    from DRL_MARL_homework.MBAM.env_wapper.simple_predator import simple_predator
+    from env_wapper.simple_predator import simple_predator
     args = parser.parse_args()
     conf = {
         "conf_id": "shooter_conf",

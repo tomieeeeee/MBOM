@@ -1,16 +1,16 @@
 import sys
-sys.path.append('/home/lenovo/文档/CodeWorkspace/RL')
+sys.path.append("D:/document/3v3")
 import torch
 import torch.nn as nn
 import numpy as np
-from DRL_MARL_homework.MBAM.env_wapper.simple_tag.simple_tag import Simple_Tag
-from DRL_MARL_homework.MBAM.utils.datatype_transform import dcn
-from DRL_MARL_homework.MBAM.utils.get_exp_data_path import get_exp_data_path
+from env_wapper.simple_tag.simple_tag import Simple_Tag
+from utils.datatype_transform import dcn
+from utils.get_exp_data_path import get_exp_data_path
 from torch.utils.tensorboard import SummaryWriter
 import argparse
 import os
-from DRL_MARL_homework.MBAM.policy.MBAM_OM_MH import MBAM_OM_MH
-from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
+from policy.MBAM_OM_MH import MBAM_OM_MH
+from baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
 n_state = 20
 n_oppo_action = [5, 5, 5]
 n_action = 5
@@ -113,9 +113,9 @@ def train(args):
             agent2_paths.append(os.path.join(root, f))
     for i in range(1, MAX_TRAIN+1):
         #if np.random.random() > 0.2:
-        gen_s, gen_a, gen_oppo_a, gen_s_, gen_r = gen_mem_with_policy(args, env, agent1_paths, agent2_paths)
+        #gen_s, gen_a, gen_oppo_a, gen_s_, gen_r = gen_mem_with_policy(args, env, agent1_paths, agent2_paths)
         #else:
-            #gen_s, gen_a, gen_oppo_a, gen_s_, gen_r = gen_mem(env)
+        gen_s, gen_a, gen_oppo_a, gen_s_, gen_r = gen_mem(env)
         for j in range(len(gen_s)):
             buf_s[cur_idx] = gen_s[j]
             buf_a[cur_idx] = gen_a[j]
@@ -162,8 +162,13 @@ def gen_mem(env):
     s = env.reset()
     s = s[0]
     while True:
-        actions = random_actions()
+        #actions = random_actions()
+        #actions = [[np.random.randint(0, 5, 3) for i in range(1)],np.random.randint(0, 5, 1)]
+        list = [[ np.random.randint(0, 5, size=[1]),np.random.randint(0, 5, size=[1]),np.random.randint(0, 5, size=[1])],np.random.randint(0, 5, size=[1])]
+        #生成形如[[array([3]), array([1]), array([2])], array([4])]的列表
+        actions = [[action.item() for  action in list[0]],list[1].item()]
         s_, r, d, _ = env.step(actions)
+        '''
         s_ = s_[1]
         gen_s.append(s)
         gen_a.append(np.eye(n_action)[actions[0]])
@@ -171,6 +176,24 @@ def gen_mem(env):
         gen_s_.append(s_)
         gen_r.append(r[1])
         s = s_
+        '''
+        s_ = s_[1]
+        gen_s.append(s.copy())
+        gen_oppo_a.append(np.concatenate([np.eye(n_oppo_action[i])[actions[0][i]] for i in range(len(actions[0]))]))
+        gen_a.append(np.eye(n_action)[actions[1]])
+        gen_r.append(np.array(r)/reward_normal_factor)
+        gen_s_.append(s_)
+        print(np.concatenate([np.eye(n_oppo_action[i])[actions[0][i]] for i in range(len(actions[0]))]))
+        print(type(np.concatenate([np.eye(n_oppo_action[i])[actions[0][i]] for i in range(len(actions[0]))])))
+        print(np.eye(n_action)[actions[1]])
+        print(type(np.eye(n_action)[actions[1]]))
+        print(np.array(r)/reward_normal_factor)
+        print(type(np.array(r)/reward_normal_factor))
+        print(r)
+        print(type(r))
+        print(np.array(r))
+        print(type(np.array(r)))
+        print(np.array(r))
         if d:
             break
     return gen_s, gen_a, gen_oppo_a, gen_s_, gen_r
@@ -195,6 +218,8 @@ def gen_mem_with_policy(args, env, agent1_paths, agent2_paths):
         action_info1 = agent1.choose_action(obs[0], hidden_state=hidden_state1)
         action_info2 = agent2.choose_action(obs[1], hidden_state=hidden_state2, oppo_hidden_prob=action_info1[5])
         #actions = random_actions()
+        #print(type(action_info1))
+        #print(action_info1)
         actions = [[a.item() for a in action_info1[0]], action_info2[0].item()]
         obs_, r, d, _ = env.step(actions)
         gen_s.append(obs[0].copy())
@@ -271,7 +296,7 @@ if __name__ == "__main__":
     parser.add_argument('--train', default=False, type=bool, help='')
     args = parser.parse_args()
     #__main__(parser.parse_args())
-
+    train(args)
     env = load_env_model(device='cpu')
     pass
     # test code

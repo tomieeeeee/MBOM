@@ -1,8 +1,8 @@
 import sys
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
-from DRL_MARL_homework.MBAM.baselines.PPO_OM_MH import PPO_OM_MH
-from DRL_MARL_homework.MBAM.policy.Opponent_Model_MH import Opponent_Model_MH, OM_MH_Buffer
-from DRL_MARL_homework.MBAM.utils.torch_tool import soft_update
+from baselines.PPO_OM_MH import PPO_OM_MH
+from policy.Opponent_Model_MH import Opponent_Model_MH, OM_MH_Buffer
+from utils.torch_tool import soft_update
 import torch
 import numpy as np
 from memory_profiler import profile
@@ -266,6 +266,7 @@ class MBAM_OM_MH(PPO_OM_MH):
             mixed_phis = soft_update(self.om_phis, self.mix_ratio)
             with torch.no_grad():
                 mixed_om_action_probs, mixed_om_hidden_probs = self.oppo_model.get_action_prob(state, mixed_phis)
+        print("duishou",mixed_om_hidden_probs)
         return mixed_om_hidden_probs
     def _gen_om_phis(self, state, hidden_state=None):
         #print("\n\nstart rollout")
@@ -342,6 +343,9 @@ class MBAM_OM_MH(PPO_OM_MH):
                 hidden_state = torch.Tensor(hidden_state).to(device=self.device)
 
             # env_model get next_state and reward
+                
+
+
             actions = [None, None]
             actions[self.agent_idx] = action
             actions[1 - self.agent_idx] = oppo_action
@@ -501,7 +505,7 @@ class MBAM_OM_MH(PPO_OM_MH):
         :return: None
         '''
         if not hasattr(self, "mixer"):
-            from DRL_MARL_homework.MBAM.base.Actor_RNN import Actor_RNN
+            from base.Actor_RNN import Actor_RNN
             import itertools
             self.mixer = Actor_RNN(input=self.conf["num_om_layers"],
                                    output=self.conf["num_om_layers"],
@@ -733,9 +737,9 @@ if __name__ == "__main__":
     #
     # endtime = time.time()
     # print("time", endtime - starttime)
-    from DRL_MARL_homework.MBAM.env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env as football_env
-    from DRL_MARL_homework.MBAM.env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import load_env_model as football_env_model
-    from DRL_MARL_homework.MBAM.env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import ENV_football_1_vs_1_penalty_kick
+    from env_wapper.football_penalty_kick.football_1_vs_1_penalty_kick import make_env as football_env
+    from env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import load_env_model as football_env_model
+    from env_model.football_penalty_kick.model_football_1_vs_1_penalty_kick import ENV_football_1_vs_1_penalty_kick
     env = football_env()
     env_model = football_env_model(args.device)
     mbam = MBAM(args=args, conf=conf, name="AAA", logger=None, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model,

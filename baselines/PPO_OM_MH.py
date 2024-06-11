@@ -1,14 +1,16 @@
 import sys
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
-from DRL_MARL_homework.MBAM.baselines.Base_ActorCritic import Base_ActorCritic
-from DRL_MARL_homework.MBAM.utils.datatype_transform import dcn
-from DRL_MARL_homework.MBAM.utils.rl_utils import discount_cumsum
+from baselines.Base_ActorCritic import Base_ActorCritic
+from baselines.Base_ActorCritic_MH import Base_ActorCritic_MH
+from utils.datatype_transform import dcn
+from utils.rl_utils import discount_cumsum
 import numpy as np
 import torch
 from torch.distributions.categorical import Categorical
 from memory_profiler import profile
 
-class PPO_OM_MH(Base_ActorCritic):
+#源代码class PPO_OM_MH(Base_ActorCritic):
+class PPO_OM_MH(Base_ActorCritic_MH):
     def __init__(self, args, conf, name, logger, actor_rnn, device=None):
         super(PPO_OM_MH, self).__init__(a_n_state=conf["n_state"],
                                   v_n_state=conf["n_state"],
@@ -33,6 +35,57 @@ class PPO_OM_MH(Base_ActorCritic):
             return None
 
     def choose_action(self, state, greedy=False, hidden_state=None, oppo_hidden_prob=None):
+        assert (type(state) is np.ndarray) or (type(state) is torch.Tensor), "choose_action input type error"
+        #with torch.no_grad():
+        if type(state) is np.ndarray:
+            state = state.reshape(-1, self.conf["n_state"])
+            a_state = torch.Tensor(state).to(device=self.device)
+            v_state = torch.Tensor(state).to(device=self.device)
+        else:
+            a_state = state.clone()
+            v_state = state
+        if self.device:
+            a_state = a_state.to(self.device)
+            v_state = v_state.to(self.device)
+        if oppo_hidden_prob is not None:
+            if type(oppo_hidden_prob) is np.ndarray:
+                oppo_hidden_prob = torch.Tensor(oppo_hidden_prob).to(device=self.device)
+            oppo_hidden_prob = oppo_hidden_prob.view((-1, sum(self.conf["n_opponent_action"]) if self.args.true_prob else self.conf["opponent_model_hidden_layers"][-1]))
+            if self.args.prophetic_onehot:
+                oppo_hidden_prob = torch.eye(self.conf["n_opponent_action"], device=self.device)[torch.argmax(oppo_hidden_prob, dim=1)]
+            #print("a_state" ,  a_state)
+            #print("hidden_prob" ,  oppo_hidden_prob)
+            a_state = torch.cat([a_state, oppo_hidden_prob], dim=1)
+            #print("pinjie" ,  a_state)
+        if hidden_state is not None:
+            if type(hidden_state) is np.ndarray:
+                hidden_state = torch.Tensor(hidden_state).to(device=self.device)
+            hidden_state = hidden_state.view((-1, self.conf["a_hidden_layers"][0]))
+        value = self.v_net(v_state)
+        if self.actor_rnn:
+            action_prob, hidden_prob, hidden_state = self.a_net(a_state, hidden_state)
+        else:
+            action_prob, hidden_prob = self.a_net(a_state)
+        #print("action prob" , action_prob)
+        #print("hidden_prob222",hidden_prob)
+        if greedy:
+            pi = Categorical(action_prob)
+            _, action = torch.max(action_prob, dim=1)
+            logp_a = pi.log_prob(action)
+            entropy = pi.entropy()
+        else:
+            pi = [torch.distributions.Categorical(prob) for prob in action_prob]
+            action = [p.sample() for p in pi]
+            logp_a = [p.log_prob(a) for p, a in zip(pi, action)]
+            entropy = [p.entropy() for p in pi]
+
+        return ([dcn(a).astype(np.int32) for a in action],
+                [dcn(l) for l in logp_a],
+                [dcn(ent) for ent in entropy],
+                dcn(value),
+                [dcn(acp) for acp in action_prob],
+                [dcn(hip) for hip in hidden_prob],
+                dcn(hidden_state) if self.actor_rnn else None)        
         '''
         :param state: np.ndarry or torch.Tensor shape is (n_batch, n_state)
         :param greedy:
@@ -43,7 +96,7 @@ class PPO_OM_MH(Base_ActorCritic):
                  action_prob, np.ndarray float (n_batch, n_action)
                  hidden_prob, np.ndarray float (n_batch, n_hidden_prob), this is actor network number of latest layer'cell
                  hidden_state, np.ndarray float (n_batch, n_hidden_state), is None if not actor_rnn
-        '''
+        
         assert (type(state) is np.ndarray) or (type(state) is torch.Tensor), "choose_action input type error"
         #with torch.no_grad():
         if type(state) is np.ndarray:
@@ -72,7 +125,8 @@ class PPO_OM_MH(Base_ActorCritic):
             action_prob, hidden_prob, hidden_state = self.a_net(a_state, hidden_state)
         else:
             action_prob, hidden_prob = self.a_net(a_state)
-        # print("action prob" , action_prob)
+        action_prob = torch.tensor(action_prob)
+        print("action prob" , action_prob)
         if greedy:
             pi = Categorical(action_prob)
             _, action = torch.max(action_prob, dim=1)
@@ -90,7 +144,7 @@ class PPO_OM_MH(Base_ActorCritic):
                 dcn(action_prob),
                 dcn(hidden_prob),
                 dcn(hidden_state) if self.actor_rnn else None)
-
+        '''#源代码
     def single_choose_action(self, state, greedy=False, hidden_state=None, oppo_hidden_prob=None):
         '''
         :param state: np.ndarry or torch.Tensor shape is (n_batch, n_state)
@@ -103,6 +157,7 @@ class PPO_OM_MH(Base_ActorCritic):
                  hidden_prob, np.ndarray float (n_batch, n_hidden_prob), this is actor network number of latest layer'cell
                  hidden_state, np.ndarray float (n_batch, n_hidden_state), is None if not actor_rnn
         '''
+        raise NotImplementedError
         assert (type(state) is np.ndarray) or (type(state) is torch.Tensor), "choose_action input type error"
         #with torch.no_grad():
         if type(state) is np.ndarray:
@@ -144,6 +199,8 @@ class PPO_OM_MH(Base_ActorCritic):
             action = pi.sample()
             logp_a = pi.log_prob(action)
             entropy = pi.entropy()
+
+        
         return (dcn(action).astype(np.int32),
                 logp_a,
                 entropy,
@@ -185,6 +242,8 @@ class PPO_OM_MH(Base_ActorCritic):
         if self.actor_rnn:
             hidden_state = data["hidden_state"]
         action = data["action"]
+        #for i, lp in enumerate(action):
+        #                 print(f"Shapeeee of action[{i}]:", lp.shape)
         reward_to_go = data["reward_to_go"]
         advantage = data["advantage"]
         logp_a = data["logp_a"]
@@ -192,10 +251,16 @@ class PPO_OM_MH(Base_ActorCritic):
         if self.device:
             a_state = a_state.to(self.device)
             v_state = v_state.to(self.device)
-            action = action.to(self.device)
+            #源代码action = action.to(self.device)
+            
+            action = [a.to(self.device) for a in action]
+            
             reward_to_go = reward_to_go.to(self.device)
             advantage = advantage.to(self.device)
-            logp_a = logp_a.to(self.device)
+            #源代码logp_a = logp_a.to(self.device)
+            
+            logp_a = [lpa.to(self.device) for lpa in logp_a]
+            
             if self.actor_rnn:
                 hidden_state = hidden_state.to(self.device)
 
@@ -206,27 +271,65 @@ class PPO_OM_MH(Base_ActorCritic):
                     prob, _, _ = self.a_net(state, hidden_state)
                 else:
                     prob, _ = self.a_net(state)
-                pi = Categorical(prob)
-                logp = pi.log_prob(action.squeeze())
+                #for i, lp in enumerate(prob):
+                #    print(f"Shape of prob[{i}]:", lp.shape)
+                #源代码pi = Categorical(prob)
+                #源代码logp = pi.log_prob(action.squeeze())
+                pi = [Categorical(p) for p in prob]
+                #logp = [p.log_prob(a.squeeze()) for p, a in zip(pi, action)]
+                '''
+                for i, lp in enumerate(action):
+                         print(f"Shape前 of action[{i}]:", lp.shape)
+
+# 将列表中的张量堆叠成一个形状为 [5000, 6, 1] 的三维张量
+                stacked_tensor = torch.stack(action)
+
+# 转置堆叠后的张量，以获得形状为 [6, 5000, 1] 的张量
+                transposed_tensor = stacked_tensor.permute(1, 0, 2)
+
+# 将形状为 [6, 5000, 1] 的张量分解为 6 个形状为 [5000, 1] 的张量
+                action = [transposed_tensor[i] for i in range(6)]
+                print("action",type(action))
+                print("action[0]",type(action[0]))
+                for i, lp in enumerate(action):
+                         print(f"Shape后 of action[{i}]:", lp.shape)
+                sys.exit()
+                '''
+                logp = [p.log_prob(a.squeeze()) for p, a in zip(pi, action)]#[6,6,5000]
+                #print("yunxingok")
+
+
             else:  # "continuous"
                 raise NotImplementedError
                 #mu, sigma = self.a_net(state)
                 #pi = torch.distributions.Normal(mu, sigma)
                 #logp = pi.log_prob(action.squeeze()).sum(axis=-1)
-            logp_old = logp_old.squeeze()
-            assert logp.shape == logp_old.shape, "compute_loss_a error! logp.shape != logp_old.shape"
-            ratio = torch.exp(logp - logp_old.squeeze())
+            #源代码logp_old = logp_old.squeeze()
+            logp_old = [l_old.squeeze() for l_old in logp_old]
+            #源代码assert logp.shape == logp_old.shape, "compute_loss_a error! logp.shape != logp_old.shape"
+            #源代码ratio = torch.exp(logp - logp_old.squeeze())
+            ratio = [torch.exp(l - l_old.squeeze()) for l, l_old in zip(logp, logp_old)]
             advantage = advantage.squeeze()
-            assert ratio.shape == advantage.shape, "compute_loss_a error! ratio.shape != advantage.shape"
-            clip_advantage = torch.clamp(ratio, 1 - self.conf["epsilon"], 1 + self.conf["epsilon"]) * advantage
-            ent = pi.entropy().mean()
-            loss_a = -(torch.min(ratio * advantage, clip_advantage)).mean() - self.conf["entcoeff"] * ent
+            #源代码assert ratio.shape == advantage.shape, "compute_loss_a error! ratio.shape != advantage.shape"
+            #源代码clip_advantage = torch.clamp(ratio, 1 - self.conf["epsilon"], 1 + self.conf["epsilon"]) * advantage
+            #源代码ent = pi.entropy().mean()
+            #源代码loss_a = -(torch.min(ratio * advantage, clip_advantage)).mean() - self.conf["entcoeff"] * ent
+            clip_advantage = [torch.clamp(r, 1 - self.conf["epsilon"], 1 + self.conf["epsilon"]) * advantage for r in ratio]
+            ent = [p.entropy().mean() for p in pi]
+            loss_a = torch.stack([-(torch.min(r * advantage, c_adv)).mean() - self.conf["entcoeff"] * en for r, c_adv, en in zip(ratio, clip_advantage, ent)]).mean()
 
             # extra info
             with torch.no_grad():
-                approx_kl = (logp_old - logp).mean().item()
+                '''源代码approx_kl = (logp_old - logp).mean().item()
+                approx_kl = sum([(l_old - l).mean().item() for l_old, l in zip(logp_old, logp)])/len(logp)
                 ent_info = ent.item()
                 clipped = ratio.gt(1 + self.conf["epsilon"]) | ratio.lt(1 - self.conf["epsilon"])
+                clipfrac = torch.as_tensor(clipped, dtype=torch.float32).mean().item()
+                a_net_info = dict(kl=approx_kl, ent=ent_info, cf=clipfrac)
+                '''
+                approx_kl = sum([(l_old - l).mean().item() for l_old, l in zip(logp_old, logp)])/len(logp)
+                ent_info = sum([e.item() for e in ent])/len(ent)
+                clipped = torch.stack([ratio[i].gt(1 + self.conf["epsilon"]) | ratio[i].lt(1 - self.conf["epsilon"]) for i in range(len(ratio))])
                 clipfrac = torch.as_tensor(clipped, dtype=torch.float32).mean().item()
                 a_net_info = dict(kl=approx_kl, ent=ent_info, cf=clipfrac)
             return loss_a, a_net_info
@@ -303,13 +406,16 @@ class PPO_OM_MH_Buffer(object):
         self.gamma = conf["gamma"]
         self.lam = conf["lambda"]
         self.oppo_output_dim = len(conf["n_opponent_action"])
+        self.output_dim = len(conf["n_action"])
 
         self.state = torch.zeros((conf["buffer_memory_size"], conf["n_state"]), dtype=torch.float32)
-        self.action = torch.zeros((conf["buffer_memory_size"], 1), dtype=int)
+        #源代码self.action = torch.zeros((conf["buffer_memory_size"], 1), dtype=int)
+        self.action = [torch.zeros((conf["buffer_memory_size"], 1), dtype=int) for _ in range(self.output_dim)]
         self.reward = torch.zeros((conf["buffer_memory_size"], 1), dtype=torch.float32)
         self.reward_to_go = torch.zeros((conf["buffer_memory_size"], 1), dtype=torch.float32)
         self.advantage = torch.zeros((conf["buffer_memory_size"], 1), dtype=torch.float32)
-        self.logp_a = torch.zeros((conf["buffer_memory_size"], 1), dtype=torch.float32)
+        #源代码self.logp_a = torch.zeros((conf["buffer_memory_size"], 1), dtype=torch.float32)
+        self.logp_a = [torch.zeros((conf["buffer_memory_size"], 1), dtype=torch.float32) for _ in range(self.output_dim)]
         self.value = torch.zeros((conf["buffer_memory_size"], 1), dtype=torch.float32)
         if self.actor_rnn:
             self.hidden_state = torch.zeros((conf["buffer_memory_size"], self.conf["a_hidden_layers"][0]), dtype=torch.float32)
@@ -335,9 +441,10 @@ class PPO_OM_MH_Buffer(object):
         '''
         data = episode_memory.get_data()
         n_batch = data["state"].shape[0]
-        for k in data.keys():
-            if k is not 'oppo_hidden_prob':
-                assert data[k].shape[0] == n_batch, "input size error"
+
+        #for k in data.keys():
+        #    if k is not 'oppo_hidden_prob':
+        #        assert data[k].shape[0] == n_batch, "input size error"
 
         # cal GAE-Lambda advantage and rewards-to-go
         reward = data["reward"]
@@ -368,16 +475,32 @@ class PPO_OM_MH_Buffer(object):
                 self.oppo_hidden_prob[i][path_slice] = oppo_hidden_prob[i]
 
         action = data["action"]
-        if type(action) is np.ndarray: action = torch.LongTensor(action)
-        self.action[path_slice] = action
+        #源代码if type(action) is np.ndarray: action = torch.LongTensor(action)        
+        #源代码self.action[path_slice] = action
+        if type(action[0]) is np.ndarray:
+            action = [torch.LongTensor(a) for a in action]
+        '''
+        for i, lp in enumerate(action):
+                 print(f"Shape of actionnnn[{i}]:", lp.shape)
+        print(action[0][path_slice].shape)
+        sys.exit()维数有误？
+        '''
+        for i in range(self.output_dim):
+            self.action[i][path_slice] = action[i]
+
 
         state = data["state"]
         if type(state) is np.ndarray: state = torch.Tensor(state)
         self.state[path_slice] = state
 
         logp_a = data["logp_a"]
-        if type(logp_a) is np.ndarray: logp_a = torch.Tensor(logp_a)
-        self.logp_a[path_slice] = logp_a
+        #源代码if type(logp_a) is np.ndarray: logp_a = torch.Tensor(logp_a)
+        #源代码self.logp_a[path_slice] = logp_a
+        if type(logp_a[0]) is np.ndarray:
+            logp_a = [torch.Tensor(l) for l in logp_a]
+        for i in range(self.output_dim):
+            self.logp_a[i][path_slice] = logp_a[i]
+
 
         advantage = advantage.copy()
         advantage = torch.Tensor(advantage).view(-1, 1)
@@ -409,7 +532,11 @@ class PPO_OM_MH_Buffer(object):
 
     def get_batch(self, batch_size=0):
         state = self.state[:self.next_idx].to(device=self.device)
-        action = self.action[:self.next_idx].to(device=self.device)
+        #源代码action = self.action[:self.next_idx].to(device=self.device)
+        action = [a[:self.next_idx].to(device=self.device) for a in self.action]#500*6*1
+        #for i, lp in enumerate(self.action):
+         #              print(f"Sha2peeee of self.action[{i}]:", lp.shape)
+        #sys.exit()
         reward_to_go = self.reward_to_go[:self.next_idx].to(device=self.device)
         advantage = self.advantage[:self.next_idx].to(device=self.device)
         adv_mean, adv_std = torch.mean(advantage), torch.std(advantage)
@@ -421,7 +548,10 @@ class PPO_OM_MH_Buffer(object):
             advantage = (advantage - adv_mean) / adv_std
             adv_mean = adv_mean.detach().cpu()
             adv_std = adv_std.detach().cpu()
-        logp_a = self.logp_a[:self.next_idx].to(device=self.device)
+        #源代码logp_a = self.logp_a[:self.next_idx].to(device=self.device)
+
+        logp_a = [l[:self.next_idx].to(device=self.device) for l in self.logp_a]
+
         data = dict({"state": state,
                      "action": action,
                      "reward_to_go": reward_to_go,
@@ -440,7 +570,7 @@ class PPO_OM_MH_Buffer(object):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="test")
-    from DRL_MARL_homework.MBAM.env_wapper.simple_predator import simple_predator
+    from env_wapper.simple_predator import simple_predator
     args = parser.parse_args()
     conf = {
         "conf_id": "shooter_conf",

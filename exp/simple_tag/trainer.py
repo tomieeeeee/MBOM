@@ -1,27 +1,28 @@
 # RL model and buffer
-from DRL_MARL_homework.MBAM.policy.MBAM import MBAM
-from DRL_MARL_homework.MBAM.policy.MBAM_OM_MH import MBAM_OM_MH
-from DRL_MARL_homework.MBAM.policy.MBAM_MH import MBAM_MH
-from DRL_MARL_homework.MBAM.baselines.PPO import PPO, PPO_Buffer
-from DRL_MARL_homework.MBAM.baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
-from DRL_MARL_homework.MBAM.baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
+from policy.MBAM import MBAM
+from policy.MBAM_OM_MH import MBAM_OM_MH
+from policy.MBAM_MH import MBAM_MH
+from baselines.PPO import PPO, PPO_Buffer
+from baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
+from baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
 
 # env
-from DRL_MARL_homework.MBAM.env_wapper.simple_tag.simple_tag import Simple_Tag
+from env_wapper.simple_tag.simple_tag import Simple_Tag
 # env_model
 
 # conf
-from DRL_MARL_homework.MBAM.config.simple_tag_conf import player1_conf, player2_conf
-from DRL_MARL_homework.MBAM.utils.rl_utils_MH import collect_trajectory_MH, collect_trajectory_MH_reversed
+from config.simple_tag_conf import player1_conf, player2_conf
+from utils.rl_utils_MH import collect_trajectory_MH, collect_trajectory_MH_reversed
+from utils.rl_utils import collect_trajectory
 # logger
-from DRL_MARL_homework.MBAM.utils.Logger import Logger
-from DRL_MARL_homework.MBAM.utils.get_process_memory import get_processes_memory_gb
+from utils.Logger import Logger
+from utils.get_process_memory import get_processes_memory_gb
 import random
 import torch
 import numpy as np
 import multiprocessing as mp
 import os
-from DRL_MARL_homework.MBAM.utils.get_exp_data_path import get_exp_data_path
+from utils.get_exp_data_path import get_exp_data_path
 
 def simple_tag_trainer(args, logger):
     mp.set_start_method("spawn")
@@ -38,16 +39,22 @@ def simple_tag_trainer(args, logger):
         global_buffer = PPO_OM_MH_Buffer(args=args, conf=global_mbam.conf, name=global_mbam.name, actor_rnn=args.actor_rnn, device=args.device)
         processes = []
         for rank in range(args.ranks):
+            #新建一个线程
             p = mp.Process(target=worker, args=(args, logger.root_dir, rank, channel_in[rank], channel_out[rank]))
+            #开始执行worker函数
             p.start()
+            #线程p加入processes列表
             processes.append(p)
         pid_list = [p.pid for p in processes] + [os.getpid()]
+        #开始训练
         for epoch in range(1, args.max_epoch + 1):
             for rank in range(args.ranks):
+                #主进程向子进程发送a-net信息,由于子进程10个epoch才接收数据
                 channel_out[rank].put({"a_net": global_mbam.a_net.state_dict(), "v_net": global_mbam.v_net.state_dict()})
-            logger.log("global, epoch:{} param shared!".format(epoch))
+            logger.log("globallllll, epoch:{} param shared!".format(epoch))
             datum = []
             for rank in range(args.ranks):
+                #接收子进程的数据
                 data = channel_in[rank].get()
                 datum.append(data)
             merge_data = dict()
@@ -62,6 +69,7 @@ def simple_tag_trainer(args, logger):
                     #    merge_data[key] = merge_data[key] + d[key]
                 else:
                     raise TypeError
+            #绿学
             global_mbam.learn(data=merge_data, iteration=epoch, no_log=False)
             logger.log("global, epoch:{} param updated!".format(epoch, epoch))
             if epoch % args.save_per_epoch == 0:
@@ -96,11 +104,13 @@ def worker(args, root_dir, rank, channel_out, channel_in):
     for epoch in range(1, args.max_epoch + 1):
         """隔几次update一次param"""
         if epoch % 10 == 1:
+            #接收主进程的数据
             param = channel_in.get()
             mbam.a_net.load_state_dict(param["a_net"])
             mbam.v_net.load_state_dict(param["v_net"])
 
-        logger.log("rank:{}, epoch:{} start!".format(rank, epoch))
+        logger.log("rankkkkkk:{}, epoch:{} start!".format(rank, epoch))
+        #rl_utils_MH.py的方法collect_trajectory_MH，会收集eps_per_epoch个回合的数据
         memory, scores, global_step, touch_times = collect_trajectory_MH(agents, env, args, global_step, is_prophetic=True)
         for i in range(2):
             logger.log_performance(tag=agents[i].name, iteration=epoch, Score=scores[i], Touch=touch_times)
@@ -108,12 +118,14 @@ def worker(args, root_dir, rank, channel_out, channel_in):
             last_val = [agents[i].v_net(torch.from_numpy(m.final_state[0].astype(np.float32)).to(args.device)).detach().cpu().numpy().item() for m in memory[i]]
             buffers[i].store_multi_memory(memory[i], last_val=last_val)
             #buffers[i].store_multi_memory(memory[i], last_val=0)
+        #只有红方在改进
         agents[0].learn(data=buffers[0].get_batch(), iteration=epoch, no_log=False)
-
+        agents[1].learn(data=buffers[1].get_batch(), iteration=epoch, no_log=False)#自己加的
         """隔几次update一次param"""
         if epoch % 10 == 0:
+            #10个epoch之后向主进程发送数据
             channel_out.put(buffers[1].get_batch())
-
+        #红绿双方保存模型
         if epoch % args.save_per_epoch == 0:
             for i in range(2):
                 agents[i].save_model(epoch)
@@ -202,63 +214,8 @@ def individual_worker_reversed(args, logger, **kwargs):
     logger.log("train end!")
 
 
-def continue_train_worker(args, logger, mbam, **kwargs):
-    '''set seed'''
-    random.seed(logger.seed)
-    torch.manual_seed(logger.seed)
-    np.random.seed(logger.seed)
-    '''env'''
-    env = Simple_RPS(eps_max_step=args.eps_max_step)
-    env_model = None
-    '''prepare agents'''
-    '''get shooter model file list'''
-    player1_path = get_exp_data_path() + "/Simple_RPS/new_Player1"
-    player1_model_file_list = []
-    for root, dirs, files in os.walk(player1_path):
-        for f in files:
-            player1_model_file_list.append(os.path.join(root, f))
-
-    ppo = PPO(args, player1_conf, name="player1", logger=logger, actor_rnn=args.actor_rnn, device=args.device)
-    agents = [ppo, mbam]
-    buffers = [PPO_Buffer(args=args, conf=agent.conf, name=agent.name, actor_rnn=args.actor_rnn, device=args.device) for agent in agents]
-
-    logger.log_param(args, [agent.conf for agent in agents])
-    global_step = 0
-
-    player1_count = 0
-    for epoch in range(1, args.max_epoch + 1):
-        if player1_count == 0:
-            player1_file = player1_model_file_list[np.random.randint(0, len(player1_model_file_list), 1).item()]
-            ppo = PPO.load_model(player1_file, args, logger, args.device)
-            agents = [ppo, mbam]
-            player1_count += 1
-        elif player1_count == 9:
-            player1_count = 0
-        else:
-            player1_count += 1
-
-        logger.log("epoch:{} start!".format(epoch))
-        memory, scores, global_step = collect_trajectory(agents, env, args, global_step, is_prophetic=True)
-        for i in range(1, 2):
-            logger.log_performance(tag=agents[i].name, iteration=epoch, Score=scores[i])
-            if args.alter_train:
-                if int((epoch - 1) / args.alter_interval) % 2 == i:
-                    buffers[i].store_multi_memory(memory[i], last_val=0)
-                    agents[i].learn(data=buffers[i].get_batch(), iteration=epoch, no_log=False)
-                else:
-                    buffers[i].clear_memory()
-            else:
-                buffers[i].store_multi_memory(memory[i], last_val=0)
-                agents[i].learn(data=buffers[i].get_batch(), iteration=epoch, no_log=False)
-        if epoch % args.save_per_epoch == 0:
-            for i in range(1, 2):
-                agents[i].save_model(epoch)
-        # logger.log("memory:{}".format(get_current_memory_gb()))
-    logger.log("train end!")
-
-
 if __name__ == "__main__":
-    from DRL_MARL_homework.MBAM.main import main
+    from main import main
     import argparse
     parser = argparse.ArgumentParser(description="")
 

@@ -1,4 +1,4 @@
-from DRL_MARL_homework.MBAM.env_wapper.mpe.make_env import make_env
+from env_wapper.mpe.make_env import make_env
 import numpy as np
 
 
