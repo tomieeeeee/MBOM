@@ -17,7 +17,7 @@ class Simple_Tag(object):
         self.eps_max_step = eps_max_step
         self.cur_step = 0
         #self.env是environment
-        self.env = make_env('simple_tag_v6', is_contain_done=False)
+        self.env = make_env('simple_tag_v6_show', is_contain_done=False)
 
     def obs_trans(self, raw_obs):
         """state is the agent's observation"""
@@ -47,16 +47,29 @@ class Simple_Tag(object):
         #a = [np.eye(self.n_action)[actions[1]]]
         a = dis_idx_to_dis_onehot(actions[1])#[array([0., 1., 0., 0., 0.]), array([0., 0., 0., 1., 0.]), array([1., 0., 0., 0., 0.])]
         
-        #print("a",a)
+        
         actions = oppo_a + a
         done = False
         obs_, rew, d, info = self.env.step(actions)
+        b = self.n_agent//2
+        ###增加的
+        reward1 = reward2 =0
+        for i in range(len(rew[0:b])):
+            reward1 += rew[0:b][i]###########根据智能体数量要变化
+        for j in range(len(rew[b:])):
+            reward2 += rew[b:][j]
+        rew=[reward1,reward2]
+        #print(rew)
+        ###增加的
         #rew = [rew[0], rew[-1]] #only return the opponent's reward and the agent's reward
+        
+        #print(rew)
         if np.any(d == True):
             done = True
             self.env_state_running = False
         if self.cur_step == self.eps_max_step:
             done = True
+            ############打印击中数量print(self.env.get_number())
             self.env_state_running = False
         # for i in range(2):
         #     if (np.abs(obs_[i][1:]) >= obs_[i][0]).any() == True:

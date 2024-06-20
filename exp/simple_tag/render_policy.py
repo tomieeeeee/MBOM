@@ -35,8 +35,8 @@ if __name__ == '__main__':
     if MOD == "ppo vs mbam":
         #file_dir = "/media/lenovo/144ED9814ED95C54/experiment_data/Simple_Tag/train/trueprob_simple_tag_ppo_vs_mbam_10oppo/0_1284741196/worker/0_2/model/"
         file_dir = "D:/document/MBAM/data/Simple_Tag/"
-        player1_file = file_dir + "PPO_MH_player1_rank0_iter20000.ckp"
-        player2_file = file_dir + "MBAM_player2_iter20000.ckp"
+        player1_file = file_dir + "PPO_MH_player1__player1_iter81000.ckp"
+        player2_file = file_dir + "MBAM_player2_player2_iter2800.ckp"
         
         player1_type = "ppo_mh" # "mbam_mh_om_mh"
         player2_type = "mbam_om_mh"

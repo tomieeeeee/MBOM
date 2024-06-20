@@ -94,7 +94,9 @@ def worker(args, root_dir, rank, channel_out, channel_in):
     env = Simple_Tag(args.eps_max_step)
     env_model = None
     logger = Logger(root_dir, "worker", rank)
-    ppo = PPO_MH(args, player1_conf, name="player1_rank{}".format(rank), logger=logger, actor_rnn=args.actor_rnn, device=args.device)
+    #ppo = PPO_MH(args, player1_conf, name="player1_rank{}".format(rank), logger=logger, actor_rnn=args.actor_rnn, device=args.device)
+    player1_path = get_exp_data_path() + "/Simple_Tag/Player1/for_test_1/PPO_MH_player2_player2_iter80500.ckp"
+    ppo = PPO_MH.load_model(player1_path, args, logger=logger, device=args.device)
     mbam = MBAM_OM_MH(args=args, conf=player2_conf, name="player2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model, device=args.device)
     agents = [ppo, mbam]
     buffers = [PPO_MH_Buffer(args=args, conf=agents[0].conf, name=agents[0].name, actor_rnn=args.actor_rnn, device=args.device),

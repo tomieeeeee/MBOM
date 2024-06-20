@@ -30,8 +30,10 @@ player1_conf = {
     
 
     #shooter ppo setting
-    "v_hidden_layers": [128, 64],
-    "a_hidden_layers": [128, 64],
+    #"v_hidden_layers": [128, 64],
+    #"a_hidden_layers": [128, 64],
+    "v_hidden_layers": [64, 32],
+    "a_hidden_layers": [64, 32],
     "v_learning_rate": 0.001,
     "a_learning_rate": 0.001,
     "gamma": 0.99,  # value discount factor
@@ -78,8 +80,10 @@ player2_conf = {
     "mix_factor": 1,  # adjust mix cuvre, Strongly related to error_horizon and error_delay
 
     # ppo setting
-    "v_hidden_layers": [128, 64],
-    "a_hidden_layers": [128, 64],
+    #"v_hidden_layers": [128, 64],
+    #"a_hidden_layers": [128, 64],
+    "v_hidden_layers": [64, 32],
+    "a_hidden_layers": [64, 32],
     "v_learning_rate": 0.001,
     "a_learning_rate": 0.001,
     "gamma": 0.99,  # value discount factor

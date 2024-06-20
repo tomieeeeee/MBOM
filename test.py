@@ -56,6 +56,22 @@ if __name__ == "__main__":
     state = numpy.random.random((11, 20))
     #layer = layer.reshape(-1,2)
     print(state)
+    a=[1,2,3,4,5,6,7,8,9,10,11,12]
+    a1=a[0:6]
+    a2=a[6:]
+    a=[a1,a2]
+    print(a1)
+    print(a2)
+    print(a)
+    print(13//2)
+    a=[1,2,3,4,5,6,7,8,9,10,11,12]
+    reward1 =reward2=0
+    for i in range(len(a[0:6])):
+            reward1 += a[0:6][i]###########根据智能体数量要变化
+    for j in range(len(a[6:])):
+            reward2 += a[6:][j]
+        
+    print(reward1,reward2)
     '''v6
     def is_collision(self, agent1, agent2,world,hit_list):
         delta_pos = agent1.state.p_pos - agent2.state.p_pos

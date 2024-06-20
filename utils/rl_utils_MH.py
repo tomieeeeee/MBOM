@@ -289,8 +289,8 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
         oppo_hidden_prob = np.array([None, None])
         # Begin to collect trajectory
         state = env.reset()
-        temp_memory = [Episode_Memory_MH(len(agents[0].conf["n_action"])), Episode_Memory_OM_MH(len(agents[1].conf["n_opponent_action"]))]
-         #temp_memory = [Episode_Memory_MH(len(agents[0].conf["n_action"])), Episode_Memory_MH(len(agents[1].conf["n_opponent_action"]))]
+        #源代码temp_memory = [Episode_Memory_MH(len(agents[0].conf["n_action"])), Episode_Memory_OM_MH(len(agents[1].conf["n_opponent_action"]))]
+        temp_memory = [Episode_Memory_MH(len(agents[0].conf["n_action"])), Episode_Memory_MH(len(agents[1].conf["n_opponent_action"]))]
         while True:
             global_step += 1
             actions = [0, 0]
@@ -397,11 +397,17 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
 
             #print(reward)
             #print("actions is " ,actions)
-
+            #源代码
             # store env info
             for i in range(len(agents)):
                 temp_memory[i].store_env_info(state[i], reward[i])
-
+            '''
+            reward1=reward[0:6]
+            reward2=reward[6:]
+            reward=[reward1,reward2]
+            for i in range(len(agents)):
+                temp_memory[i].store_env_info(state[i], reward[i])
+            '''
             # store oppo action
             if not is_prophetic:
                 for agent_idx, agent in enumerate(agents):
