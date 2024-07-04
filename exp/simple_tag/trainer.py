@@ -95,7 +95,7 @@ def worker(args, root_dir, rank, channel_out, channel_in):
     env_model = None
     logger = Logger(root_dir, "worker", rank)
     #ppo = PPO_MH(args, player1_conf, name="player1_rank{}".format(rank), logger=logger, actor_rnn=args.actor_rnn, device=args.device)
-    player1_path = get_exp_data_path() + "/Simple_Tag/Player1/for_test_1/PPO_MH_player2_player2_iter80500.ckp"
+    player1_path = get_exp_data_path() + "/Simple_Tag/Player1/for_test_1/PPO_MH_player1__player1_iter120700.ckp"
     ppo = PPO_MH.load_model(player1_path, args, logger=logger, device=args.device)
     mbam = MBAM_OM_MH(args=args, conf=player2_conf, name="player2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model, device=args.device)
     agents = [ppo, mbam]
@@ -118,6 +118,8 @@ def worker(args, root_dir, rank, channel_out, channel_in):
             logger.log_performance(tag=agents[i].name, iteration=epoch, Score=scores[i], Touch=touch_times)
             assert args.env == "simple_tag", "env is not simple_tag"
             last_val = [agents[i].v_net(torch.from_numpy(m.final_state[0].astype(np.float32)).to(args.device)).detach().cpu().numpy().item() for m in memory[i]]
+            #print(type(last_val))
+           
             buffers[i].store_multi_memory(memory[i], last_val=last_val)
             #buffers[i].store_multi_memory(memory[i], last_val=0)
         #只有红方在改进

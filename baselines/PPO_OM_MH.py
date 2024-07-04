@@ -470,8 +470,18 @@ class PPO_OM_MH_Buffer(object):
 
         if "MBAM" in self.name:
             oppo_hidden_prob = data["oppo_hidden_prob"]
+            #将(n_batch,n_oppo_num，action_prob)转换为（n_oppo_num，n_batch，action_prob）
             if type(oppo_hidden_prob[0]) is np.ndarray: oppo_hidden_prob = torch.Tensor(oppo_hidden_prob)
-            for i in range(self.oppo_output_dim):
+            oppo_hidden_prob = oppo_hidden_prob.permute(1, 0, 2)
+            for i in range(self.oppo_output_dim):#智能体个数
+                '''
+                print("path_slice:", path_slice)#(0, 100, None)
+                print(self.oppo_hidden_prob[i].shape)#([6000, 5])
+                #print(self.oppo_hidden_prob.shape)#list
+                print(self.oppo_hidden_prob[i][path_slice].shape)#([100, 5])
+                print(oppo_hidden_prob.shape)#([100, 6, 5])
+                print(oppo_hidden_prob[i].shape)#([6, 5])
+                '''
                 self.oppo_hidden_prob[i][path_slice] = oppo_hidden_prob[i]
 
         action = data["action"]

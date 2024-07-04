@@ -72,6 +72,23 @@ if __name__ == "__main__":
             reward2 += a[6:][j]
         
     print(reward1,reward2)
+    import torch
+
+# 随机生成一个尺寸为 [2, 6, 5] 的数据
+    oppo_hidden_prob = torch.randn(2, 6, 5)
+
+# 打印原始数据的尺寸
+    print("Original size:", oppo_hidden_prob)
+
+# 转换数据的尺寸从 [2, 6, 5] 到 [6, 2, 5]
+    oppo_hidden_prob_reshaped = oppo_hidden_prob.transpose(0, 1)
+
+# 打印转换后数据的尺寸
+    print("Reshaped size:", oppo_hidden_prob_reshaped.shape)
+
+# 打印转换后数据以验证
+    print("Reshaped data:\n", oppo_hidden_prob_reshaped)
+
     '''v6
     def is_collision(self, agent1, agent2,world,hit_list):
         delta_pos = agent1.state.p_pos - agent2.state.p_pos

@@ -35,8 +35,8 @@ if __name__ == '__main__':
     if MOD == "ppo vs mbam":
         #file_dir = "/media/lenovo/144ED9814ED95C54/experiment_data/Simple_Tag/train/trueprob_simple_tag_ppo_vs_mbam_10oppo/0_1284741196/worker/0_2/model/"
         file_dir = "D:/document/MBAM/data/PPO_6v6/"
-        player1_file = file_dir + "PPO_MH_player2_player2_iter68300.ckp"
-        player2_file = file_dir + "PPO_MH_player2_player2_iter68300.ckp"
+        player1_file = file_dir + "PPO_MH_player1__player1_iter80500.ckp"
+        player2_file = file_dir + "PPO_MH_player2_player2_iter80500.ckp"
         #PPO_MH_player1__player1_iter120700
         player1_type = "ppo_mh" # "mbam_mh_om_mh"
         player2_type = "mbam_om_mh"
@@ -47,8 +47,12 @@ if __name__ == '__main__':
         agent2 = PPO_MH.load_model(filepath=player2_file, args=args, logger=None, device=args.device)#, env_model=None
         env = Simple_Tag()
         agents = [agent1, agent2]
+        score=[]
+        score1=[]
         for i in range(100):
             step=0
+            temp=[]
+            temp1=[]
             s = env.reset()
             while True:
                 
@@ -61,14 +65,31 @@ if __name__ == '__main__':
                 a = [a.item() for a in action_info2[0]]
                 actions = [oppo_a, a]
                 s_, rew, done, _ = env.step(actions)
+                temp.append(rew[0])
+                temp1.append(rew[1])
                 step+=1
                 #print(rew)
                 #if rew[0] >= 10:
                 #    print("touch!!!!!!!")
                 s = s_
                 if done:
-                    print("enddddddddddd",step)
+                    score_temp=sum(temp)/len(temp)
+                    score_temp1=sum(temp1)/len(temp1)
+                    score.append(score_temp)
+                    score1.append(score_temp1)
+                    #
+                    # print(score)
                     break
+
+        import xlwt
+        f = xlwt.Workbook('encoding = utf-8') #设置工作簿编码
+        sheet1 = f.add_sheet('sheet1',cell_overwrite_ok=True) #创建sheet工作表
+        #list1 = [1,3,4,6,8,10]#要写入的列表的值
+        for i in range(len(score)):
+             sheet1.write(i,0,score[i]) #写入数据参数对应 行, 列, 值
+             sheet1.write(i,1,score1[i])
+        f.save("D:/document/MBAM/data/show_data/text1.xls")#保存.xls到当前工作目录
+
     elif MOD == "mbam vs ppo":
         #file_dir = "/media/lenovo/144ED9814ED95C54/experiment_data/Simple_Tag/train/trueprob_simple_tag_mbam_vs_ppo/0_11557236/model/"
         #file_dir = "/media/lenovo/144ED9814ED95C54/experiment_data/Simple_Tag/train/trueprob_simple_tag_mbam_vs_ppo/5_586138494/model/"

@@ -139,8 +139,8 @@ def test_worker(args, root_dir, player1_id, player1_file, player2_ckp, seed, pla
         except Exception as e:
             print(e)
     else:
-        agent2 = MBAM_OM_MH.load_model(player2_ckp, args, cur_logger, device=args.device, env_model=env_model)
-        #agent2 = MBAM_OM_MH(args=args, conf=player2_conf, name="player2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model, device=args.device)
+        #agent2 = MBAM_OM_MH.load_model(player2_ckp, args, cur_logger, device=args.device, env_model=env_model)
+        agent2 = MBAM_OM_MH(args=args, conf=player2_conf, name="player2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model, device=args.device)
         agent2.name = agent2.name + "_player2"
         buffer2 = PPO_OM_MH_Buffer(args, player2_conf, agent2.name, actor_rnn=args.actor_rnn, device=args.device)
     agent1.name = agent1.name + "_player1"
@@ -194,6 +194,7 @@ def test_worker(args, root_dir, player1_id, player1_file, player2_ckp, seed, pla
                 else:
                     assert args.env == "simple_tag", "env is not simple_tag"
                     last_val = [agents[i].v_net(torch.from_numpy(m.final_state[0].astype(np.float32)).to(args.device)).detach().cpu().numpy().item() for m in memory[i]]
+                    #print(last_val)
                     buffers[i].store_multi_memory(memory[i], last_val=last_val)
                     #buffers[i].store_multi_memory(memory[i], last_val=0)
                     agents[i].learn(data=buffers[i].get_batch(), iteration=epoch, no_log=False)
