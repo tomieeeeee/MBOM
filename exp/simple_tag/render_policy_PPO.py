@@ -41,6 +41,8 @@ if __name__ == '__main__':
         player1_type = "ppo_mh" # "mbam_mh_om_mh"
         player2_type = "mbam_om_mh"
 
+        
+
         player1_ctor = None
         player2_ctor = None
         agent1 = PPO_MH.load_model(filepath=player1_file, args=args, logger=None, device=args.device)
@@ -57,7 +59,7 @@ if __name__ == '__main__':
             while True:
                 
                 time.sleep(0.02)
-                env.render()
+                env.render("mode=rgb_array")
                 action_info1 = agent1.choose_action(state=s[0])
                 oppo_a = [a.item() for a in action_info1[0]]
                 #源代码a = agent2.choose_action(state=s[1], oppo_hidden_prob=action_info1[5])[0].item()

@@ -74,6 +74,7 @@ if __name__ == "__main__":
     print(reward1,reward2)
     import torch
 
+
 # 随机生成一个尺寸为 [2, 6, 5] 的数据
     oppo_hidden_prob = torch.randn(2, 6, 5)
 
@@ -88,6 +89,16 @@ if __name__ == "__main__":
 
 # 打印转换后数据以验证
     print("Reshaped data:\n", oppo_hidden_prob_reshaped)
+    chr="0x"+"2192"
+    print(chr)
+    def t():
+         return -10
+    a= 10
+    a+=t()
+    print(a)
+    t= [1,2,3]
+    b=[4,5,6]
+    print(t+b)
 
     '''v6
     def is_collision(self, agent1, agent2,world,hit_list):
@@ -204,7 +215,6 @@ if __name__ == "__main__":
     print(list_with_array)
     
     print(to_dict)
-
 
 '''
 

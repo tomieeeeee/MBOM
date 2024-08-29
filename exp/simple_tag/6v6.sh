@@ -8,8 +8,8 @@ python main.py \
 --test_mode 1 \
 --policy_training True \
 --seed -1 \
---prefix "train" \
---player2_is_ppo False \
+--prefix "test" \
+--player2_is_ppo True \
 --ranks 1 \
 --device "cuda:0" \
 --dir "" \
