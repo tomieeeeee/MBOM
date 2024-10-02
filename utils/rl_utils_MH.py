@@ -269,6 +269,8 @@ class Episode_Memory_MH_OM_MH():
         score = 0
         for i in range(len(self.reward)):
             score += self.reward[i]
+            print("self.reward",len(self.reward))
+            print(self.reward)
         return float(score)
 
 
@@ -384,10 +386,10 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
                                                  **dis_layers_prob, **hit_ratio_layers)
             #print("actions",actions)
             state_, reward, done, info = env.step(actions)
-
-            assert args.env == "simple_tag", "env is not simple_tag!!!"
-            if reward[0] >= 10:
-                touch_times = touch_times + 1
+            #原touch_times计算方法
+            #assert args.env == "simple_tag", "env is not simple_tag!!!"
+            #if reward[0] >= 10:
+            #   touch_times = touch_times + 1
 
             #if args.env == "coin_game" and info is not None:
                 #if info["same_pick"]:
@@ -418,7 +420,7 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
             if done:
                 for i in range(len(agents)):
                     temp_memory[i].store_final_state(state_[i], info)
-                    
+                    touch_times = env.count_alive()[0]
                     memories[i].append(temp_memory[i])
                     #print("zheshishenme",memories[i])
                     scores[i].append(temp_memory[i].get_score())
@@ -426,6 +428,7 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
                                                  #Touch=touch_times
                                                  )
                 break
+                
     
     scores = [sum(scores[i])/len(scores[i]) for i in range(len(agents))]
     return memories, scores, global_step, touch_times/args.eps_per_epoch
@@ -497,9 +500,9 @@ def collect_trajectory_MH_reversed(agents, env, args, global_step, is_prophetic=
             # env interact
             state_, reward, done, info = env.step(actions)
 
-            assert args.env == "simple_tag", "env is not simple_tag!!!"
-            if reward[0] >= 10:
-                touch_times = touch_times + 1
+            #assert args.env == "simple_tag", "env is not simple_tag!!!"
+            #if reward[0] >= 10:
+            #    touch_times = touch_times + 1
 
             # store env info
             for i in range(len(agents)):
@@ -513,6 +516,7 @@ def collect_trajectory_MH_reversed(agents, env, args, global_step, is_prophetic=
                                                   iteration=global_step, no_log=False)
             state = state_
             if done:
+                touch_times = env.count()[0]#对手存活数量越少越好
                 for i in range(len(agents)):
                     temp_memory[i].store_final_state(state_[i], info)
                     memories[i].append(temp_memory[i])

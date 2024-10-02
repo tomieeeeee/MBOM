@@ -20,7 +20,7 @@ for i in range(n_agent):
     n_action.append(5)
 hidden_layer1 = 128
 hidden_layer2 = 64
-path = get_exp_data_path() + "/Simple_Tag/Env_Model/ENV_simple_tag"
+path = get_exp_data_path() + "/Simple_Tag/for_env_model/PPO_v10_1"
 reward_normal_factor = 10
 # 24+11+11->24+1
 class ENV_Simple_Tag(nn.Module):
@@ -108,8 +108,8 @@ def train(args):
     optimizer = torch.optim.SGD(env_model.parameters(), lr=0.0001)
     loss_fn = nn.MSELoss()
     writer = SummaryWriter(path + "/log")
-    agent1_dir = get_exp_data_path() + "/Simple_Tag/Player1/for_env_model"
-    agent2_dir = get_exp_data_path() + "/Simple_Tag/Player2/for_env_model"
+    agent1_dir = get_exp_data_path() + "/Simple_Tag/for_env_model/PPO_v10_1/Player1"
+    agent2_dir = get_exp_data_path() + "/Simple_Tag/for_env_model/PPO_v10_1/Player2"
     agent1_paths = []
     for root, dirs, files in os.walk(agent1_dir):
         for f in files:

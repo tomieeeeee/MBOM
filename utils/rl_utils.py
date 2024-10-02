@@ -92,6 +92,7 @@ def collect_trajectory(agents, env, args, global_step, is_prophetic=False, greed
             global_step += 1
             actions = np.array([0, 0], dtype=int)
             for agent_idx, agent in enumerate(agents):
+                print(type(agent).__name__ )
                 if type(agent).__name__ == "MBAM":
                     '''
                      action, np.ndarray int32 (num_trj, 1, 1)
@@ -105,7 +106,11 @@ def collect_trajectory(agents, env, args, global_step, is_prophetic=False, greed
                     #print("agent{} start choose_action, layers is {}".format(agent.agent_idx, agent.conf["num_om_layers"]))
                     action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx], oppo_hidden_prob=oppo_hidden_prob[1-agent_idx] if is_prophetic == True else None, greedy=greedy, global_step=global_step)
                     #temp_memory[agent_idx].mixed_action_prob = mixed_action_prob
+                elif type(agent).__name__ == "MBAM_MH":
 
+                    print(111111111111111)
+                    action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx], oppo_hidden_prob=oppo_hidden_prob[1-agent_idx] if is_prophetic == True else None, greedy=greedy, global_step=global_step)
+                    #temp_memory[agent_idx].mixed_action_prob = mixed_action_prob                
                 elif type(agent).__name__ == "PPO":
                     action_info = agent.choose_action(state[agent_idx], hidden_state=hidden_state[agent_idx], oppo_hidden_prob=None, greedy=greedy)
                 elif type(agent).__name__ == "Meta_mapg":

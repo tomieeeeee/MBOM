@@ -34,9 +34,9 @@ if __name__ == '__main__':
     ######MOD = "mbam vs ppo"
     if MOD == "ppo vs mbam":
         #file_dir = "/media/lenovo/144ED9814ED95C54/experiment_data/Simple_Tag/train/trueprob_simple_tag_ppo_vs_mbam_10oppo/0_1284741196/worker/0_2/model/"
-        file_dir = "D:/document/MBAM/data/PPO_6v6/"
-        player1_file = file_dir + "PPO_MH_player1__player1_iter80500.ckp"
-        player2_file = file_dir + "PPO_MH_player2_player2_iter80500.ckp"
+        file_dir = "D:/document/MBAM/data/Simple_Tag/test/trueprob_MBOM_6v6/52_1555609351/worker/0_0/model/"
+        player1_file = file_dir + "PPO_MH_player1__player1_iter61800.ckp"
+        player2_file = file_dir + "PPO_MH_player2_player2_iter61800.ckp"
         #PPO_MH_player1__player1_iter120700
         player1_type = "ppo_mh" # "mbam_mh_om_mh"
         player2_type = "mbam_om_mh"
@@ -57,8 +57,6 @@ if __name__ == '__main__':
             temp1=[]
             s = env.reset()
             while True:
-                
-                time.sleep(0.02)
                 env.render("mode=rgb_array")
                 action_info1 = agent1.choose_action(state=s[0])
                 oppo_a = [a.item() for a in action_info1[0]]
@@ -82,7 +80,7 @@ if __name__ == '__main__':
                     #
                     # print(score)
                     break
-
+        '''
         import xlwt
         f = xlwt.Workbook('encoding = utf-8') #设置工作簿编码
         sheet1 = f.add_sheet('sheet1',cell_overwrite_ok=True) #创建sheet工作表
@@ -91,7 +89,7 @@ if __name__ == '__main__':
              sheet1.write(i,0,score[i]) #写入数据参数对应 行, 列, 值
              sheet1.write(i,1,score1[i])
         f.save("D:/document/MBAM/data/show_data/text1.xls")#保存.xls到当前工作目录
-
+        '''
     elif MOD == "mbam vs ppo":
         #file_dir = "/media/lenovo/144ED9814ED95C54/experiment_data/Simple_Tag/train/trueprob_simple_tag_mbam_vs_ppo/0_11557236/model/"
         #file_dir = "/media/lenovo/144ED9814ED95C54/experiment_data/Simple_Tag/train/trueprob_simple_tag_mbam_vs_ppo/5_586138494/model/"
@@ -124,8 +122,8 @@ if __name__ == '__main__':
                 a = agent2.choose_action(state=s[1])[0].item()
                 actions = [oppo_a,a]
                 s_, rew, done, _ = env.step(actions)
-                if rew[0] >= 10:
-                    print("touch!!!!!!!")
+                #if rew[0] >= 10:
+                #    print("touch!!!!!!!")
                 s = s_
                 if done:
                     break

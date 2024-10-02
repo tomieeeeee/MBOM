@@ -235,10 +235,10 @@ def gen_mem_with_policy(args, env, agent1_paths, agent2_paths):
 
 
 def load_env_model(device):
-    if not os.path.exists(path + "/850000.pt"):
+    if not os.path.exists(path + "/480000.pt"):
         print("Env model don't exist!", path + "/850000.pt")
     try:
-        env_model = torch.load(path + "/850000.pt", map_location='cpu')
+        env_model = torch.load(path + "/480000.pt", map_location='cpu')
     except Exception as e:
         print("error:", e)
     env_model.device = device

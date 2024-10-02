@@ -9,7 +9,7 @@ from baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
 # env
 from env_wapper.simple_tag.simple_tag import Simple_Tag
 # env_model
-
+from env_model.simple_tag.model_simple_tag import load_env_model as simple_tag_env_model
 # conf
 from config.simple_tag_conf import player1_conf, player2_conf
 from utils.rl_utils_MH import collect_trajectory_MH, collect_trajectory_MH_reversed
@@ -142,10 +142,14 @@ def individual_worker(args, logger, **kwargs):
     np.random.seed(logger.seed)
     '''env'''
     env = Simple_Tag(eps_max_step=args.eps_max_step)
-    env_model = None
+    #env_model = None
+    env_model = simple_tag_env_model(args.device)
     '''prepare agents'''
-    ppo = PPO(args, player1_conf, name="player1", logger=logger, actor_rnn=args.actor_rnn, device=args.device)
-    mbam = MBAM(args=args, conf=player2_conf, name="player2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn,
+    #ppo = PPO(args, player1_conf, name="player1", logger=logger, actor_rnn=args.actor_rnn, device=args.device)
+    
+    player1_ckp = get_exp_data_path() + "/Simple_Tag/Player1/scenario1/PPO_MH_player1__player1_iter44900.ckp"
+    ppo = PPO_MH.load_model(player1_ckp, args, logger, device=args.device)
+    mbam = MBAM_OM_MH(args=args, conf=player2_conf, name="player2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn,
                 env_model=env_model, device=args.device)
 
     agents = [ppo, mbam]
@@ -155,7 +159,7 @@ def individual_worker(args, logger, **kwargs):
     global_step = 0
     for epoch in range(1, args.max_epoch + 1):
         logger.log("epoch:{} start!".format(epoch))
-        memory, scores, global_step = collect_trajectory(agents, env, args, global_step, is_prophetic=True)
+        memory, scores, global_step = collect_trajectory_MH(agents, env, args, global_step, is_prophetic=True)
         for i in range(2):
             logger.log_performance(tag=agents[i].name, iteration=epoch, Score=scores[i])
             if args.alter_train:

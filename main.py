@@ -9,7 +9,7 @@ sys.path.append("/home/xiaopeng/CodeWorkspace/RL")
 from utils.Logger import Logger
 # trainer tester
 from exp.simple_tag.trainer import simple_tag_trainer
-from exp.simple_tag.tester import simple_tag_tester
+from exp.simple_tag.tester_PPO import simple_tag_tester
 #from exp.coin_game.trainer import coin_game_trainer
 #from exp.coin_game.tester import coin_game_tester
 # dir
@@ -109,3 +109,4 @@ if __name__ == "__main__":
       parser.add_argument("--config", type=str, default="", help="extra info")
       args = parser.parse_args()
       main(args)
+      print(args)

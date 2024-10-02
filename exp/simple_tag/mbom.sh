@@ -4,12 +4,11 @@
 python main.py \
 --exp_name "MBOM_6v6" \
 --env "simple_tag" \
---train_mode 0 \
+--train_mode 1 \
 --test_mode 0 \
 --policy_training True \
 --seed -1 \
---prefix "test" \
---player2_is_ppo True \
+--prefix "train" \
 --ranks 1 \
 --device "cuda:0" \
 --dir "" \

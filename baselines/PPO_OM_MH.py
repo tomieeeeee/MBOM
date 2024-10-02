@@ -50,7 +50,9 @@ class PPO_OM_MH(Base_ActorCritic_MH):
         if oppo_hidden_prob is not None:
             if type(oppo_hidden_prob) is np.ndarray:
                 oppo_hidden_prob = torch.Tensor(oppo_hidden_prob).to(device=self.device)
-            oppo_hidden_prob = oppo_hidden_prob.view((-1, sum(self.conf["n_opponent_action"]) if self.args.true_prob else self.conf["opponent_model_hidden_layers"][-1]))
+            #oppo_hidden_prob = oppo_hidden_prob.view((-1, sum(self.conf["n_opponent_action"]) if self.args.true_prob else self.conf["opponent_model_hidden_layers"][-1]))
+            oppo_hidden_prob = oppo_hidden_prob.view((-1, self.conf["opponent_model_hidden_layers"][-1]))
+            
             if self.args.prophetic_onehot:
                 oppo_hidden_prob = torch.eye(self.conf["n_opponent_action"], device=self.device)[torch.argmax(oppo_hidden_prob, dim=1)]
             #print("a_state" ,  a_state)

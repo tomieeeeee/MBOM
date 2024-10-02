@@ -23,7 +23,6 @@ class PPO_MH(Base_ActorCritic_MH):
         self.device = device
         if device is not None:
             self.change_device(device)
-
     def init_hidden_state(self, n_batch):
         if self.actor_rnn:
             hidden_state = torch.zeros((n_batch, self.conf["a_hidden_layers"][0]), device=self.device)
@@ -324,7 +323,7 @@ class PPO_MH_Buffer(object):
             raise NotImplementedError
             #self.hidden_state = torch.zeros((conf["buffer_memory_size"], self.conf["a_hidden_layers"][0]), dtype=torch.float32)
         if "MBAM" in self.name:
-            self.oppo_hidden_prob = torch.zeros((conf["buffer_memory_size"], self.conf["n_opponent_action"]) if self.args.true_prob else (conf["buffer_memory_size"], self.conf["opponent_model_hidden_layers"][-1]), dtype=torch.float32)
+            self.oppo_hidden_prob = torch.zeros((conf["buffer_memory_size"], sum(self.conf["n_opponent_action"])) if self.args.true_prob else (conf["buffer_memory_size"], self.conf["opponent_model_hidden_layers"][-1]), dtype=torch.float32)
 
         self.next_idx, self.max_size = 0, conf["buffer_memory_size"]
 

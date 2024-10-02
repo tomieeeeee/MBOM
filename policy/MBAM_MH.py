@@ -1,7 +1,7 @@
 import sys
 sys.path.append("/home/lenovo/文档/CodeWorkspace/RL")
 from baselines.PPO_MH import PPO_MH
-from policy.Opponent_Model import Opponent_Model, OM_Buffer
+from policy.Opponent_Model_MH import Opponent_Model_MH, OM_MH_Buffer
 from utils.torch_tool import soft_update
 import torch
 import numpy as np
@@ -23,8 +23,8 @@ class MBAM_MH(PPO_MH):
                                   logger=logger)
         self.agent_idx = agent_idx      #agent_index in env
         self.env_model = env_model
-        self.oppo_model = Opponent_Model(args, conf, self.name, device)
-        self.om_buffer = OM_Buffer(args, conf, device)
+        self.oppo_model = Opponent_Model_MH(args, conf, self.name, device)
+        self.om_buffer = OM_MH_Buffer(args, conf, device)
         self.om_phis = np.array([self.oppo_model.get_parameter()] * conf["num_om_layers"])
         if rnn_mixer:
             self.mix_ratio = torch.Tensor([1.0 / conf["num_om_layers"]] * conf["num_om_layers"]).to(device)
