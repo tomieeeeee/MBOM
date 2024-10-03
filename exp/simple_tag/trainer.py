@@ -92,10 +92,12 @@ def simple_tag_trainer(args, logger):
 
 def worker(args, root_dir, rank, channel_out, channel_in):
     env = Simple_Tag(args.eps_max_step)
-    env_model = None
+    #env_model = None
+    env_model = simple_tag_env_model(args.device)
     logger = Logger(root_dir, "worker", rank)
     #ppo = PPO_MH(args, player1_conf, name="player1_rank{}".format(rank), logger=logger, actor_rnn=args.actor_rnn, device=args.device)
-    player1_path = get_exp_data_path() + "/Simple_Tag/Player1/for_test_1/PPO_MH_player1__player1_iter120700.ckp"
+    #player1_path = get_exp_data_path() + "/Simple_Tag/Player1/for_test_1/PPO_MH_player1__player1_iter120700.ckp"
+    player1_path = get_exp_data_path() + "/Simple_Tag/Player1/scenario1/PPO_MH_player1__player1_iter44900.ckp"
     ppo = PPO_MH.load_model(player1_path, args, logger=logger, device=args.device)
     mbam = MBAM_OM_MH(args=args, conf=player2_conf, name="player2", logger=logger, agent_idx=1, actor_rnn=args.actor_rnn, env_model=env_model, device=args.device)
     agents = [ppo, mbam]
@@ -153,13 +155,13 @@ def individual_worker(args, logger, **kwargs):
                 env_model=env_model, device=args.device)
 
     agents = [ppo, mbam]
-    buffers = [PPO_Buffer(args=args, conf=agent.conf, name=agent.name, actor_rnn=args.actor_rnn, device=args.device) for agent in agents]
+    buffers = [PPO_MH_Buffer(args=args, conf=agent.conf, name=agent.name, actor_rnn=args.actor_rnn, device=args.device) for agent in agents]
 
     logger.log_param(args, [agent.conf for agent in agents])
     global_step = 0
     for epoch in range(1, args.max_epoch + 1):
         logger.log("epoch:{} start!".format(epoch))
-        memory, scores, global_step = collect_trajectory_MH(agents, env, args, global_step, is_prophetic=True)
+        memory, scores, global_step, touch_times  = collect_trajectory_MH(agents, env, args, global_step,is_prophetic=True)
         for i in range(2):
             logger.log_performance(tag=agents[i].name, iteration=epoch, Score=scores[i])
             if args.alter_train:

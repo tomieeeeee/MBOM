@@ -11,8 +11,8 @@ from baselines.PPO_OM_MH import PPO_OM_MH, PPO_OM_MH_Buffer
 from env_wapper.simple_tag.simple_tag import Simple_Tag
 import argparse
 import time
-
-
+from env_model.simple_tag.model_simple_tag import load_env_model as simple_tag_env_model
+from env_model.simple_tag.model_simple_tag import ENV_Simple_Tag
 if __name__ == '__main__':
   #graphviz = GraphvizOutput()
   #graphviz.output_file = 'render.png'
@@ -34,19 +34,21 @@ if __name__ == '__main__':
 
 
     #file_dir = "/media/lenovo/144ED9814ED95C54/experiment_data/Simple_Tag/train/trueprob_simple_tag_ppo_vs_mbam_10oppo/0_1284741196/worker/0_2/model/"
-    file_dir = "D:/document/MBAM/data/for_data/PPO_v10_2/set1/52_177822776/worker/0_0/model/"
-    player1_file = file_dir + "PPO_MH_player1__player1_iter77200.ckp"
-    player2_file = file_dir + "PPO_MH_player2_player2_iter77200.ckp"
+    file_dir = "D:/document/MBAM/data/for_data/PPO_v10_1/set3/0_974160051/worker/0_0/model/"#D:\document\MBAM\data\for_data\PPO_v10_2\set3\\worker\0_0\model
+    player1_file = file_dir + "PPO_MH_player1__player1_iter28900.ckp"
+    #player2_file = file_dir + "PPO_MH_player2_player2_iter77200.ckp"
+    player2_file = file_dir + "MBAM_player2_iter28900.ckp"
     #PPO_MH_player1__player1_iter120700
     player1_type = "ppo_mh" # "mbam_mh_om_mh"
     player2_type = "mbam_om_mh"
 
     
-
+    env_model = simple_tag_env_model(args.device)
     player1_ctor = None
     player2_ctor = None
     agent1 = PPO_MH.load_model(filepath=player1_file, args=args, logger=None, device=args.device)
-    agent2 = PPO_MH.load_model(filepath=player2_file, args=args, logger=None, device=args.device)#, env_model=None
+    #agent2 = PPO_MH.load_model(filepath=player2_file, args=args, logger=None, device=args.device)#, env_model=None
+    agent2 = MBAM_OM_MH.load_model(filepath=player2_file, args=args, logger=None, device=args.device, env_model=env_model)
     env = Simple_Tag()
     agents = [agent1, agent2]
     score=[]
@@ -60,8 +62,6 @@ if __name__ == '__main__':
         step = 0
         s = env.reset()
         while True:
-            
-            time.sleep(0.2)
             #env.render()
             #env.render("mode=rgb_array")
             #print(type(frame))
@@ -78,13 +78,13 @@ if __name__ == '__main__':
             
             for i in range (10):
                 action_info2.append(agent2.choose_action(state=s[i][1]))
-            end = time.clock()
+            
             a = []
 
             for i in range (10):
-                a.append([a.item() for a in action_info2[i][0]])   
-            oppo_action = []
-            
+                a.append([a.item() for a in action_info2[i][0]])
+            end = time.clock()
+            print("解算时间",end-start)
             '''
             arrow_base = 0x2190 
             for i in range(6):

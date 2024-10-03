@@ -292,7 +292,8 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
         # Begin to collect trajectory
         state = env.reset()
         #源代码temp_memory = [Episode_Memory_MH(len(agents[0].conf["n_action"])), Episode_Memory_OM_MH(len(agents[1].conf["n_opponent_action"]))]
-        temp_memory = [Episode_Memory_MH(len(agents[0].conf["n_action"])), Episode_Memory_MH(len(agents[1].conf["n_opponent_action"]))]
+        temp_memory = [Episode_Memory_MH(len(agents[0].conf["n_action"])), Episode_Memory_OM_MH(len(agents[1].conf["n_opponent_action"]))]
+        
         while True:
             global_step += 1
             actions = [0, 0]
@@ -351,10 +352,14 @@ def collect_trajectory_MH(agents, env, args, global_step, is_prophetic=False, gr
                 hidden_state[agent_idx] = action_info[6]
                 if agent_idx == 0:
                     #PPO_MH's action is multi head
-                    actions[agent_idx] = [a.item() for a in action_info[0]]
+                    print(action_info[0])
+                    #actions[agent_idx] = [a.item() for a in action_info[0]]
+                    actions[agent_idx] = [a[global_step-1] for a in action_info[0]]
+                    print(actions[agent_idx])
                 else:
                     #源代码actions[agent_idx] = action_info[0].item()
-                    actions[agent_idx] = [a.item() for a in action_info[0]]
+                    #actions[agent_idx] = [a.item() for a in action_info[0]]
+                    actions[agent_idx] = [a[global_step-1] for a in action_info[0]]
             #env.render()
             # env interact
 

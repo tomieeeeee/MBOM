@@ -1,4 +1,4 @@
-#v10_6v6
+#v11
 import sys
 sys.path.append("D:/document/3v3")
 from utils.simple_tag_action_mapping import dis_idx_to_dis_onehot, idx_to_dis_idx
@@ -9,21 +9,26 @@ import numpy as np
 class Simple_Tag(object):
     def __init__(self, eps_max_step=100, version="simple_rps"):
         super(Simple_Tag, self).__init__()
-        self.n_agent = 12
+        self.n_agent = 120
         self.n_state = 52  #以自己为中心,与初始化智能体数量有关，计算方法见simple_tag_v3
         self.n_action = 30
         self.n_opponent_action = 30
+        self.num_groups = 10#
+        self.num_per_group = 12
 
         self.env_state_running = False
         self.eps_max_step = eps_max_step
         self.cur_step = 0
         #self.env是environment
-        self.env = make_env('simple_tag_v10_1', is_contain_done=False)
+        self.env = make_env('simple_tag_v12', is_contain_done=False)
 
     def obs_trans(self, raw_obs):
         """state is the agent's observation"""
-        return [raw_obs[-1].copy(), raw_obs[-1].copy()]
-
+        obs_trans = []
+        for i in range(self.num_groups):
+            obs_trans.append([raw_obs[i*self.num_per_group+11].copy(),raw_obs[i*self.num_per_group+11].copy()])#9组观测数据
+             
+        return obs_trans
     def reset(self):
         self.cur_step = 0
         self.env_state_running = True
@@ -41,25 +46,36 @@ class Simple_Tag(object):
         assert self.env_state_running == True, "Env is stoped, please reset()"
         #print(actions)
         #print(actions[0][1])
-        
+        group_oppo_a =  actions[0]
+        group_a =  actions[1]
         #oppo_a = dis_idx_to_dis_onehot(idx_to_dis_idx(actions[0]))
-        oppo_a = dis_idx_to_dis_onehot(actions[0])#[array([1., 0., 0., 0., 0.]), array([0., 1., 0., 0., 0.]), array([0., 1., 0., 0., 0.])]
+        oppo_a = []
+        for i in range (self.num_groups):
+            oppo_a.append(dis_idx_to_dis_onehot(group_oppo_a[i]))#[[array([1., 0., 0., 0., 0.]), array([0., 1., 0., 0., 0.]), array([0., 1., 0., 0., 0.])],[array([1., 0., 0., 0., 0.]), array([0., 1., 0., 0., 0.]), array([0., 1., 0., 0., 0.])]]
         #print("oppo_a",oppo_a)
         #a = [np.eye(self.n_action)[actions[1]]]
-        a = dis_idx_to_dis_onehot(actions[1])#[array([0., 1., 0., 0., 0.]), array([0., 0., 0., 1., 0.]), array([1., 0., 0., 0., 0.])]
+        a = []
+        for i in range (self.num_groups):
+            a.append(dis_idx_to_dis_onehot(group_a[i]))#[array([0., 1., 0., 0., 0.]), array([0., 0., 0., 1., 0.]), array([1., 0., 0., 0., 0.])]
         
-        
-        actions = oppo_a + a
+        actions = []
+        for i in range (self.num_groups):
+            temp = actions + oppo_a[i] + a[i]
+            actions = temp
         done = False
         obs_, rew, d, info = self.env.step(actions)
-        b = self.n_agent//2
+        b = self.num_per_group//2
         ###增加的
-        reward1 = reward2 =0
-        for i in range(len(rew[0:b])):
-            reward1 += rew[0:b][i]###########根据智能体数量要变化
-        for j in range(len(rew[b:])):
-            reward2 += rew[b:][j]
-        rew=[reward1,reward2]
+        rew = []
+        for i in range(self.num_groups):
+            reward1 = reward2 =0
+            cur = i*self.num_per_group
+            for i in range(len(rew[cur:cur+b])):
+               reward1 += rew[0:b][i]###########根据智能体数量要变化
+            for j in range(len(rew[cur+b:cur+self.num_per_group])):
+               reward2 += rew[b:][j]
+            rew.append([reward1,reward2])
+            
         #print(rew)
         ###增加的
         #rew = [rew[0], rew[-1]] #only return the opponent's reward and the agent's reward
@@ -81,10 +97,6 @@ class Simple_Tag(object):
 
     def render(self,mode):
         return self.env.render(mode=mode)
-    
-    def count_alive(self):
-        return self.env.count()
-
         
 
 if __name__ == "__main__":

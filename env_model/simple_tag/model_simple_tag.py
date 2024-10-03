@@ -11,13 +11,20 @@ import argparse
 import os
 from policy.MBAM_OM_MH import MBAM_OM_MH
 from baselines.PPO_MH import PPO_MH, PPO_MH_Buffer
+'''
 n_state = 20
 n_oppo_action = [5, 5, 5]
 n_action = 5
 hidden_layer1 = 64
 hidden_layer2 = 32
+'''
 path = get_exp_data_path() + "/Simple_Tag/Env_Model/ENV_simple_tag"
 reward_normal_factor = 10
+n_state = 52
+n_oppo_action = [5, 5, 5,5,5,5]
+n_action = [5, 5, 5,5,5,5]
+hidden_layer1 = 128
+hidden_layer2 = 64
 # 24+11+11->24+1
 class ENV_Simple_Tag(nn.Module):
     def __init__(self, args):
@@ -55,15 +62,31 @@ class ENV_Simple_Tag(nn.Module):
                 oppo_a = [oppo_a[i].view(-1).to(device=self.device) for i in range(batchsize)]
 
             a = actions[1]
-            if type(a) is np.ndarray:
+            
+            '''
                 a = torch.LongTensor(a).view(-1).to(device=self.device)
             else:
                 a = a.view(-1).to(device=self.device)
+            '''
+            if type(a[0]) is np.ndarray:#a为list，元素形状为（15625，）
+                # 将列表转换为一个二维数组，形状为 (6, 15625)
+                stacked_array = np.stack(a)
+
+                # 转置二维数组，使其形状变为 (15625, 6)
+                transposed_array = stacked_array.T
+
+                # 将转置后的二维数组拆分为长度为 15625 的列表，每个元素为形状 (6,) 的 ndarray
+                a = [transposed_array[i] for i in range(transposed_array.shape[0])]
+                a = [torch.LongTensor(a[i]).view(-1).to(device=self.device) for i in range(batchsize)]
+            else:
+                a = [a[i].view(-1).to(device=self.device) for i in range(batchsize)]
 
 
             a_oppo_onehot = [nn.functional.one_hot(oppo_a[i], num_classes=5).float().view((-1, 5)).to(device=self.device) for i in range(batchsize)]
             a_oppo_onehot = torch.stack([a_oppo_onehot[i].flatten() for i in range(batchsize)])
-            a_onehot = nn.functional.one_hot(a, num_classes=n_action).float().view((-1, n_action)).to(device=self.device)
+            #a_onehot = nn.functional.one_hot(a, num_classes=n_action).float().view((-1, n_action)).to(device=self.device)
+            a_onehot = [nn.functional.one_hot(oppo_a[i], num_classes=5).float().view((-1, 5)).to(device=self.device) for i in range(batchsize)]
+            a_onehot = torch.stack([a_oppo_onehot[i].flatten() for i in range(batchsize)])
             x = torch.cat([s, a_oppo_onehot, a_onehot], dim=1)
 
             x = self.forward(x)
@@ -241,6 +264,7 @@ def load_env_model(device):
         env_model = torch.load(path + "/480000.pt", map_location='cpu')
     except Exception as e:
         print("error:", e)
+    #env_model = torch.load(path + "/480000.pt", map_location='cpu')
     env_model.device = device
     return env_model
 

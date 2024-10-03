@@ -4,7 +4,7 @@
 python main.py \
 --exp_name "MBOM_6v6" \
 --env "simple_tag" \
---train_mode 1 \
+--train_mode 0 \
 --test_mode 0 \
 --policy_training True \
 --seed -1 \

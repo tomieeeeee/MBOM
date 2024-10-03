@@ -42,6 +42,10 @@ class PPO_MH(Base_ActorCritic_MH):
                  hidden_prob, np.ndarray float (n_batch, n_hidden_prob), this is actor network number of latest layer'cell
                  hidden_state, np.ndarray float (n_batch, n_hidden_state), is None if not actor_rnn
         '''
+        #print(len(state))
+        #print(state[0].size)
+        if type(state) is list:
+            state = np.stack(state)
         assert (type(state) is np.ndarray) or (type(state) is torch.Tensor), "choose_action input type error"
         #with torch.no_grad():
         if type(state) is np.ndarray:
@@ -375,6 +379,8 @@ class PPO_MH_Buffer(object):
         if "MBAM" in self.name:
             oppo_hidden_prob = data["oppo_hidden_prob"]
             if type(oppo_hidden_prob) is np.ndarray: oppo_hidden_prob = torch.Tensor(oppo_hidden_prob)
+            
+            if type(oppo_hidden_prob) is list: oppo_hidden_prob = torch.Tensor(oppo_hidden_prob)#待删除
             self.oppo_hidden_prob[path_slice] = oppo_hidden_prob
 
         action = data["action"]

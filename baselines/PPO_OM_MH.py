@@ -50,8 +50,9 @@ class PPO_OM_MH(Base_ActorCritic_MH):
         if oppo_hidden_prob is not None:
             if type(oppo_hidden_prob) is np.ndarray:
                 oppo_hidden_prob = torch.Tensor(oppo_hidden_prob).to(device=self.device)
-            #oppo_hidden_prob = oppo_hidden_prob.view((-1, sum(self.conf["n_opponent_action"]) if self.args.true_prob else self.conf["opponent_model_hidden_layers"][-1]))
-            oppo_hidden_prob = oppo_hidden_prob.view((-1, self.conf["opponent_model_hidden_layers"][-1]))
+            #print(oppo_hidden_prob.size)
+            oppo_hidden_prob = oppo_hidden_prob.view((-1, sum(self.conf["n_opponent_action"]) if self.args.true_prob else self.conf["opponent_model_hidden_layers"][-1]))
+            
             
             if self.args.prophetic_onehot:
                 oppo_hidden_prob = torch.eye(self.conf["n_opponent_action"], device=self.device)[torch.argmax(oppo_hidden_prob, dim=1)]
@@ -71,10 +72,15 @@ class PPO_OM_MH(Base_ActorCritic_MH):
         #print("action prob" , action_prob)
         #print("hidden_prob222",hidden_prob)
         if greedy:
-            pi = Categorical(action_prob)
-            _, action = torch.max(action_prob, dim=1)
-            logp_a = pi.log_prob(action)
-            entropy = pi.entropy()
+            
+            pi = [torch.distributions.Categorical(prob) for prob in action_prob]#新增
+            action =[torch.argmax(p.probs, dim=1) for p in pi]
+            logp_a = [p.log_prob(a) for p, a in zip(pi, action)]
+            entropy = [p.entropy() for p in pi]
+            #pi = Categorical(action_prob)
+            #_, action =torch.max(action_prob, dim=1)
+            #logp_a = pi.log_prob(action)
+            #entropy = pi.entropy()
         else:
             pi = [torch.distributions.Categorical(prob) for prob in action_prob]
             action = [p.sample() for p in pi]
@@ -472,9 +478,13 @@ class PPO_OM_MH_Buffer(object):
 
         if "MBAM" in self.name:
             oppo_hidden_prob = data["oppo_hidden_prob"]
+            #stacked_tensor = torch.stack(oppo_hidden_prob)
+            #print(stacked_tensor.size)
+# 转置堆叠后的张量，以获得形状为 [6, 5000, 1] 的张量
+            #transposed_tensor = stacked_tensor.permute(1, 0, 2)
             #将(n_batch,n_oppo_num，action_prob)转换为（n_oppo_num，n_batch，action_prob）
             if type(oppo_hidden_prob[0]) is np.ndarray: oppo_hidden_prob = torch.Tensor(oppo_hidden_prob)
-            oppo_hidden_prob = oppo_hidden_prob.permute(1, 0, 2)
+            #oppo_hidden_prob = oppo_hidden_prob.permute(1, 0, 2)
             for i in range(self.oppo_output_dim):#智能体个数
                 '''
                 print("path_slice:", path_slice)#(0, 100, None)
@@ -484,6 +494,8 @@ class PPO_OM_MH_Buffer(object):
                 print(oppo_hidden_prob.shape)#([100, 6, 5])
                 print(oppo_hidden_prob[i].shape)#([6, 5])
                 '''
+                #print(self.oppo_output_dim)
+                #print((oppo_hidden_prob[i]).shape)
                 self.oppo_hidden_prob[i][path_slice] = oppo_hidden_prob[i]
 
         action = data["action"]

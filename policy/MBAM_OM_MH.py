@@ -266,7 +266,7 @@ class MBAM_OM_MH(PPO_OM_MH):
             mixed_phis = soft_update(self.om_phis, self.mix_ratio)
             with torch.no_grad():
                 mixed_om_action_probs, mixed_om_hidden_probs = self.oppo_model.get_action_prob(state, mixed_phis)
-        print("duishou",mixed_om_hidden_probs)
+        #print("duishou",mixed_om_hidden_probs)#预测对手的动作
         return mixed_om_hidden_probs
     def _gen_om_phis(self, state, hidden_state=None):
         #print("\n\nstart rollout")
